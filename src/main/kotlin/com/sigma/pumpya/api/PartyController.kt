@@ -23,7 +23,9 @@ import java.util.UUID
 class PartyController(
     private val partyService: PartyService,
 ) {
-
+    /**TODO
+     *
+     */
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")
     fun createParty(

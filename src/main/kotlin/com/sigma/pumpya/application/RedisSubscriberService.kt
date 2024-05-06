@@ -16,11 +16,11 @@ class RedisSubscriberService(
     private val objectMapper: ObjectMapper
 ): MessageListener {
     override fun onMessage(message: Message, pattern: ByteArray?) {
-        //해당 파티의 총액을 레디스에 업데이트, 발행인의 총 사용 금액 업데이트
-        //해당 파티의 계산 결과 업데이트
-        //메세지에 최신화된 파티 총 금액 전달
+        val channel: String = message.channel.toString()
         val publishMessage: String? = redisTemplate.stringSerializer.deserialize(message.body)
-        val receipt: Receipt = objectMapper.readValue(publishMessage, Receipt::class.java)
-        messagingTemplate.convertAndSend("/sub/channels/" + receipt.partyId, publishMessage!!)
+        /**TODO
+         * 각 레디스 토픽 채널별 발행된 메세지에 따라 처리
+         */
+        when (channel) {}
     }
 }

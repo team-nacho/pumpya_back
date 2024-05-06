@@ -36,7 +36,7 @@ class RedisConfig(
     ): RedisMessageListenerContainer {
         /*
         * Redis Channel에서 메세지를 받고 주입된 리스너들에게
-        * 비동기적으로 디스패치하는 역할을 하는 컨테이너]
+        * 비동기적으로 디스패치하는 역할을 하는 컨테이너
         *  발행된 메세지 처리를 위한 리스너들을 설정
         * */
         val container = RedisMessageListenerContainer()
@@ -47,10 +47,6 @@ class RedisConfig(
 
     @Bean
     fun listenerAdapter(subscriber: RedisSubscriberService): MessageListenerAdapter { // (2)
-        /*
-        * RedisMessageListenerContainer로부터 메세지를 디스패치 받고
-        * 실제 메세지를 처리하는 비즈니스 로직*/
-
         return MessageListenerAdapter(subscriber, "onMessage")
     }
     @Bean

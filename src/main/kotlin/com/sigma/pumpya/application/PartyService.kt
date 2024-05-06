@@ -22,37 +22,47 @@ class PartyService(
     private val partyRepository: PartyRepository,
 ) {
     private val zSetOperations: ZSetOperations<String, String> = redisTemplate.opsForZSet()
+
     fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
         var partyId = UUID.randomUUID()
         val partyName: String = "test party name"
-        /**
-         * 파티 정보를 redis에 올려야함
-         * 이때 초기 멤버의 정보와 같이 올림
-         */
         val partyAttributes =  Party(
             partyId,
             partyName,
             totalCost = 0.0,
-            costList = mapOf()
+            costList = ""
         )
-        partyRepository.saveParty(partyId, partyAttributes)
 
-        // 초기 멤버 추가
+        val partyKey: String = "party:$partyId"
+        redisTemplate.opsForHash<String, String>().putAll(partyKey, mapOf(
+            "name" to partyName
+        ))
 
-        addNewMemberInParty(partyId, createPartyRequest.userName)
-        // 각 통화별 사용 금액 리스트 초기화 (null로 설정)
-        val currencies = listOf(null)
-        val initialCurrencyCosts = currencies.associateWith { null }
-        val currencyKey = "party:$partyId:currencyCosts"
-        redisTemplate.opsForHash<String, String>().putAll(currencyKey, initialCurrencyCosts)
+        redisTemplate.opsForSet().add("parties", partyKey);
+        /**TODO
+         * 동기 처리 관련 이슈 생길 수 있음
+         */
+        val memberKey = createMember(createPartyRequest.userName);
+        addNewMemberInParty(partyKey, memberKey)
 
-        return CreatePartyResponse(partyId, partyName, 1, mapOf(createPartyRequest.userName to 0.0))
+        return CreatePartyResponse(partyAttributes)
     }
-    fun addNewMemberInParty(partyId: UUID, memberName: String) {
+    fun createMember(memberName: String): String {
         val memberId = UUID.randomUUID()
-        val memberAttributes = Member(memberName , 0.0)
-        partyRepository.saveMember(partyId, memberId, memberAttributes)
+        val memberKey = "member:$memberId"
+
+        redisTemplate.opsForHash<String, String>().putAll(memberKey, mapOf(
+            "name" to memberName,
+            "costList" to ""
+        ))
+
+        return memberKey
     }
+    fun addNewMemberInParty(partyKey: String, memberKey: String) {
+        val partyMembersKey = "$partyKey:members"
+        redisTemplate.opsForSet().add(partyMembersKey, memberKey)
+    }
+
 
     fun sendReceipt(createReceiptRequest: CreateReceiptRequest) {
         //레디스에게 발행 이 과정에서 파티의 총 금액을 계산해줘야함
@@ -69,6 +79,23 @@ class PartyService(
 
     }
 
-    fun endParty(partyId: UUID) {}
+    fun endParty(partyId: UUID) {
+        val partyKey: String = "party:$partyId"
+        val partyMembersKey = "$partyKey:members"
+
+        redisTemplate.opsForHash<String, String>().delete(partyKey)
+
+        val partyMembers = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
+        for(memberId in partyMembers) {
+            val memberKey = "member:$memberId"
+            redisTemplate.opsForHash<String, String>().delete(memberKey)
+        }
+        redisTemplate.opsForSet().remove(partyMembersKey)
+        redisTemplate.opsForSet().remove("parties", partyKey)
+
+        /**TODO
+         * 레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
+         */
+    }
 
 }

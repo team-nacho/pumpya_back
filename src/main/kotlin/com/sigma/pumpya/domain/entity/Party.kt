@@ -7,5 +7,5 @@ class Party(
     val id: UUID,
     val partyName: String,
     val totalCost: Double,
-    val costList: Map<String, Double>
+    val costList: String
 )

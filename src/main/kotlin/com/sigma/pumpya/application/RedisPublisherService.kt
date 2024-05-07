@@ -9,12 +9,22 @@ class RedisPublisherService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper
 ) {
-    /**TODO
-     * 들어온 메세지를 직렬화해서 레디스에 발행
-     */
-    fun publishReceiptMessage(receiptId: String) {
-        val messageMap = mapOf("topic" to "create_receipt", "id" to receiptId)
+    fun publishReceiptMessage(receiptId: String, topic: String) {
+        println("publishReceiptMessage:$receiptId")
+        val messageMap = mapOf("topic" to topic, "id" to receiptId)
         val jsonMessage = objectMapper.writeValueAsString(messageMap)
         redisTemplate.convertAndSend("receiptChannel", jsonMessage)
+    }
+    fun publishMemberMessage(partyId: String, topic: String) {
+        println("publishMemberMessage:$partyId")
+        val messageMap = mapOf("topic" to topic, "id" to partyId)
+        val jsonMessage = objectMapper.writeValueAsString(messageMap)
+        redisTemplate.convertAndSend("memberChannel", jsonMessage)
+    }
+    fun publishPartyMessage(partyId: String, topic: String) {
+        println("publishPartyMessage:$partyId")
+        val messageMap = mapOf("topic" to topic, "id" to partyId)
+        val jsonMessage = objectMapper.writeValueAsString(messageMap)
+        redisTemplate.convertAndSend("partyEndChannel", jsonMessage)
     }
 }

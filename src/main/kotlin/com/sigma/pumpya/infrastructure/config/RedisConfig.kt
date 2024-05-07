@@ -1,5 +1,8 @@
 package com.sigma.pumpya.infrastructure.config
-import com.sigma.pumpya.application.RedisSubscriberService
+import com.sigma.pumpya.application.MemberSubscriberService
+import com.sigma.pumpya.application.PartySubscriberService
+import com.sigma.pumpya.application.ReceiptSubscriberService
+import com.sigma.pumpya.infrastructure.enums.Channel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -31,27 +34,45 @@ class RedisConfig(
     @Bean
     fun redisMessageListenerContainer( // (1)
         connectionFactory: RedisConnectionFactory,
-        listenerAdapter: MessageListenerAdapter,
-        channelTopic: ChannelTopic
+        listenerAdapter: List<MessageListenerAdapter>,
+        channelTopics: List<ChannelTopic>
     ): RedisMessageListenerContainer {
-        /*
-        * Redis Channel에서 메세지를 받고 주입된 리스너들에게
-        * 비동기적으로 디스패치하는 역할을 하는 컨테이너
-        *  발행된 메세지 처리를 위한 리스너들을 설정
-        * */
         val container = RedisMessageListenerContainer()
         container.setConnectionFactory(connectionFactory)
-        container.addMessageListener(listenerAdapter, channelTopic)
+
+        listenerAdapter.forEachIndexed{ index, adapter ->
+            container.addMessageListener(adapter, channelTopics[index])
+        }
         return container
     }
 
     @Bean
-    fun listenerAdapter(subscriber: RedisSubscriberService): MessageListenerAdapter { // (2)
-        return MessageListenerAdapter(subscriber, "onMessage")
+    fun receiptListenerAdapter(receiptSubscriber: ReceiptSubscriberService): MessageListenerAdapter {
+        return MessageListenerAdapter(receiptSubscriber, "onReceiptMessage")
+    }
+
+    @Bean
+    fun memberListenerAdapter(memberSubscriber: MemberSubscriberService): MessageListenerAdapter {
+        return MessageListenerAdapter(memberSubscriber, "onMemberMessage")
+    }
+
+    @Bean
+    fun partyListenerAdapter(partySubscriber: PartySubscriberService): MessageListenerAdapter {
+        return MessageListenerAdapter(partySubscriber, "onPartyEndMessage")
     }
     @Bean
-    fun channelTopic(): ChannelTopic { // (4)
-        return ChannelTopic("chatroom")
+    fun receiptChannelTopic(): ChannelTopic {
+        return ChannelTopic(Channel.RECEIPT.topic)
+    }
+
+    @Bean
+    fun memberChannelTopic(): ChannelTopic {
+        return ChannelTopic(Channel.MEMBER.topic)
+    }
+
+    @Bean
+    fun partyEndChannelTopic(): ChannelTopic {
+        return ChannelTopic(Channel.PARTY_END.topic)
     }
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {

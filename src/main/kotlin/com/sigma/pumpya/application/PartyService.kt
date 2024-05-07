@@ -16,12 +16,10 @@ import java.util.*
 
 @Service
 class PartyService(
-    private var redisTemplate: RedisTemplate<String, String>,
-    private val objectMapper: ObjectMapper,
+    private val redisTemplate: RedisTemplate<String, String>,
     private val channelTopic: ChannelTopic,
-    private val partyRepository: PartyRepository,
+    private val redisPublisherService: RedisPublisherService
 ) {
-    private val zSetOperations: ZSetOperations<String, String> = redisTemplate.opsForZSet()
 
     fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
         var partyId = UUID.randomUUID()
@@ -39,9 +37,7 @@ class PartyService(
         ))
 
         redisTemplate.opsForSet().add("parties", partyKey);
-        /**TODO
-         * 동기 처리 관련 이슈 생길 수 있음
-         */
+
         val memberKey = createMember(createPartyRequest.userName);
         addNewMemberInParty(partyKey, memberKey)
 
@@ -63,20 +59,23 @@ class PartyService(
         redisTemplate.opsForSet().add(partyMembersKey, memberKey)
     }
 
-
+    /**TODO
+     * 영수증을 받아온 후 DB에 저장, 총 금액 업데이트
+     * id를 받아와서 redis에게 전손
+     *
+     */
     fun sendReceipt(createReceiptRequest: CreateReceiptRequest) {
-        //레디스에게 발행 이 과정에서 파티의 총 금액을 계산해줘야함
-        val topic: String = channelTopic.topic
-
-        redisTemplate.convertAndSend(topic, createReceiptRequest)
+        val receiptID: String = "testId"
+        redisPublisherService.publishReceiptMessage(receiptID)
     }
 
+    /**TODO
+     *
+     * db에서 삭제 구현
+     *
+     */
     fun deleteReceipt(receiptId: UUID) {
-
-    }
-
-    fun createNewMember(member: CreateNewMemberRequest) {
-
+        //DB에서 삭제
     }
 
     fun endParty(partyId: UUID) {

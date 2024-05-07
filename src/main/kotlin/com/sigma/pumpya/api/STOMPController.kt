@@ -48,21 +48,15 @@ class STOMPController(
         //db에서 삭제 후 레디스에 없데이트
         partyService.deleteReceipt(receiptId);
     }
-    /*
-    * TODO
-    *   새로운 멤버 생성 요청
-    *   멤버 이름이 들어오면 redis에 저장
-    *   후 새로운 멤버에 대한 메세지 발행
-    * */
+
     @MessageMapping("/party/{partyId}/new-member")
     fun createNewMember(
         @DestinationVariable partyId: UUID,
-        @Valid member: CreateNewMemberRequest
+        @Valid request: CreateNewMemberRequest
     ) {
-        /*
-        레디스에 멤버 업데이트
-         */
-        partyService.createNewMember(member);
+        val partyKey = "party:$partyId"
+        val memberKey = partyService.createMember(request.name)
+        partyService.addNewMemberInParty(partyKey, memberKey)
     }
 
 

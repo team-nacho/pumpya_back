@@ -9,5 +9,5 @@ class Receipt(
     val currency: String,
     val tag: String,
     val receipt: String,
-    val join: Map<String, String>
+    val join: String
 )

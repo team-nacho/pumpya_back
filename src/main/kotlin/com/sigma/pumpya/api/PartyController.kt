@@ -23,9 +23,6 @@ import java.util.UUID
 class PartyController(
     private val partyService: PartyService,
 ) {
-    /**TODO
-     *
-     */
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")
     fun createParty(
@@ -33,14 +30,21 @@ class PartyController(
     ): CreatePartyResponse {
         return partyService.createParty(createPartyRequest)
     }
+
+    /**TODO
+     * 파티 아이디로 정산 결과 가져오기
+     */
     @Operation(summary = "Get Dutch Result")
     @GetMapping("/get-dutch-result")
     fun getDutchResultWithPartyId() {}
 
-    @Operation(summary = "Create New User")
-    @PostMapping("/create-new-member")
-    fun createNewMemberToPartyWithPartyId() {}
-
+    /**TODO
+     * 파티 아이디로 영수증 가져오기
+     */
     @GetMapping("/get-receipts")
     fun getReceiptsWithPartyId() {}
+
+    /**TODO
+     *멤버 가져오기
+     */
 }

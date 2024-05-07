@@ -22,7 +22,7 @@ class STOMPController(
         @DestinationVariable partyId: String,
         @Valid createReceiptRequest: CreateReceiptRequest
     ) {
-        partyService.sendReceipt(createReceiptRequest)
+        partyService.saveReceipt(createReceiptRequest)
         val receiptId: String = "testId"
         redisPublisherService.publishReceiptMessage(receiptId,Topic.RECEIPT_CREATED.name)
     }
@@ -34,7 +34,7 @@ class STOMPController(
         redisPublisherService.publishPartyMessage(partyId, Topic.PARTY_ENDED.name)
     }
 
-    /*
+    /**
     * TODO
     *  영수증 삭제
     *  요청이 들어오면 레디스에서 삭제 후
@@ -60,6 +60,4 @@ class STOMPController(
         partyService.addNewMemberInParty(partyKey, memberKey)
         redisPublisherService.publishMemberMessage(partyId, Topic.MEMBER_REGISTERED.name)
     }
-
-
 }

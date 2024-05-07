@@ -41,7 +41,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
-
+	testImplementation("io.kotest:kotest-runner-junit5:5.3.2")
+	testImplementation("io.kotest:kotest-property:5.3.2")
+	testImplementation("io.mockk:mockk:1.13.10")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 }
 

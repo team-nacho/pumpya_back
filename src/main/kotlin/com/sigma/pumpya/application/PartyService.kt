@@ -48,8 +48,7 @@ class PartyService(
         val memberKey = "member:$memberId"
 
         redisTemplate.opsForHash<String, String>().putAll(memberKey, mapOf(
-            "name" to memberName,
-            "costList" to ""
+            "name" to memberName
         ))
 
         return memberKey

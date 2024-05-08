@@ -1,6 +1,9 @@
 package com.sigma.pumpya.application
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValues
 import com.sigma.pumpya.api.request.CreateNewMemberRequest
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
@@ -18,7 +21,7 @@ import java.util.*
 @Service
 class PartyService(
     private val redisTemplate: RedisTemplate<String, String>,
-    private val redisPublisherService: RedisPublisherService
+    private val objectMapper: ObjectMapper,
 ) {
 
     fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
@@ -33,7 +36,8 @@ class PartyService(
 
         val partyKey: String = "party:$partyId"
         redisTemplate.opsForHash<String, String>().putAll(partyKey, mapOf(
-            "name" to partyName
+            "name" to partyName,
+            "usedCurrencies" to ""
         ))
 
         redisTemplate.opsForSet().add("parties", partyKey);
@@ -57,24 +61,51 @@ class PartyService(
         val partyMembersKey = "$partyKey:members"
         redisTemplate.opsForSet().add(partyMembersKey, memberKey)
     }
+    fun getMembersWithPartyId(partyId: String): List<String> {
+        val partyMembersKey = "party:$partyId:members"
+        val memberSet: Set<String> = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
+        return memberSet.mapNotNull { memberId ->
+            val memberKey = "member:$memberId"
+            redisTemplate.opsForHash<String, String>().entries(memberKey)["name"]
+        }
+    }
 
     /**TODO
      * 영수증을 받아온 후 DB에 저장, 총 금액 업데이트
      * id를 받아와서 redis에게 전송
      *
      */
+    fun getPartyInfo(partyKey:String): Map<String, String> {
+        return redisTemplate.opsForHash<String, String>().entries(partyKey)
+    }
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest) {
         val receiptId: String = "testId"
+        val partyKey: String = "party:${createReceiptRequest.partyId}"
+
+        //TODO saveDB
+        //get party info. if not exist currency, add
+        val partyInfo = getPartyInfo(partyKey)
+        val currencyList = objectMapper
+            .readValue<Array<String>>(partyInfo["usedCurrencies"], Array<String>::class.java).toMutableList()
+
+        //TODO 바꾸면 좋지만 일단 넣어두고 중복제거
+        currencyList.add(createReceiptRequest.currency)
+        val currencyListToString = currencyList.distinct().toString()
+
+        redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
+    }
+    fun deleteReceipt(receiptId: String) {
+        //DB에서 삭제
+        //TODO 만약 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
     }
 
     /**TODO
      *
      * db에서 삭제 구현
+     * 삭제 전 해당 영수증에 관련 있는 모든 데이터 업데이트
      *
      */
-    fun deleteReceipt(receiptId: String) {
-        //DB에서 삭제
-    }
+
 
     fun endParty(partyId: String) {
         val partyKey: String = "party:$partyId"

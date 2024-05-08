@@ -2,7 +2,10 @@ package com.sigma.pumpya.api
 
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
+import com.sigma.pumpya.api.request.GetMembersRequest
+import com.sigma.pumpya.api.request.GetReceiptRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
+import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.application.PartyService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -34,17 +37,26 @@ class PartyController(
     /**TODO
      * 파티 아이디로 정산 결과 가져오기
      */
-    @Operation(summary = "Get Dutch Result")
-    @GetMapping("/get-dutch-result")
+    @Operation(summary = "Get Pumppay Result")
+    @GetMapping("/get-pumppay-result")
     fun getDutchResultWithPartyId() {}
 
     /**TODO
      * 파티 아이디로 영수증 가져오기
+     * from DB
      */
     @GetMapping("/get-receipts")
-    fun getReceiptsWithPartyId() {}
+    fun getReceiptsWithPartyId(
+        @Valid getReceiptRequest: GetReceiptRequest
+    ) {
 
-    /**TODO
-     *멤버 가져오기
-     */
+    }
+
+    @Operation(summary = "get members")
+    @GetMapping("/get-members")
+    fun getMembersWithPartyId(
+        @Valid getMemberRequest: GetMembersRequest
+    ): GetMembersResponse {
+        return GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
+    }
 }

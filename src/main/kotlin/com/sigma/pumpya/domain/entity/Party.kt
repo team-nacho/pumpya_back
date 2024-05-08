@@ -4,8 +4,8 @@ import jakarta.persistence.Id
 import java.util.*
 class Party(
     @field: Id
-    val id: UUID,
+    val partyId: String,
     val partyName: String,
-    val totalCost: Double,
-    val costList: String
+    val totalCost: Double, //expected Cost By KRW
+    val costList: String //Serialize all currenies & cost
 )

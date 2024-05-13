@@ -78,8 +78,8 @@ class PartyService(
     fun getPartyInfo(partyKey:String): Map<String, String> {
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
-    fun saveReceipt(createReceiptRequest: CreateReceiptRequest) {
-        val receiptId: String = "testId"
+    fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
+        val receiptId: String = UUID.randomUUID().toString()
         val partyKey: String = "party:${createReceiptRequest.partyId}"
 
         //TODO saveDB
@@ -93,6 +93,7 @@ class PartyService(
         val currencyListToString = currencyList.distinct().toString()
 
         redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
+        return receiptId
     }
     fun deleteReceipt(receiptId: String) {
         //DB에서 삭제

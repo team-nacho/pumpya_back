@@ -24,8 +24,7 @@ class STOMPController(
         @DestinationVariable partyId: String,
         @Valid createReceiptRequest: CreateReceiptRequest
     ) {
-        partyService.saveReceipt(createReceiptRequest)
-        val receiptId: String = "testId"
+        val receiptId: String = partyService.saveReceipt(createReceiptRequest)
         redisPublisherService.publishReceiptMessage(receiptId,Topic.RECEIPT_CREATED.name)
     }
     @Operation(summary = "end party")

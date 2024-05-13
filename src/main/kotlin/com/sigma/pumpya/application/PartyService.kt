@@ -7,8 +7,11 @@ import com.sigma.pumpya.api.request.CreateReceiptRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
+import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
+import jakarta.transaction.Transactional
+import org.springframework.core.style.ToStringCreator
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ZSetOperations
 import org.springframework.data.redis.listener.ChannelTopic
@@ -17,12 +20,13 @@ import java.util.*
 
 @Service
 class PartyService(
+    private val partyRepository: PartyRepository,
     private val redisTemplate: RedisTemplate<String, String>,
     private val redisPublisherService: RedisPublisherService
 ) {
 
     fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
-        var partyId = UUID.randomUUID()
+        var partyId = UUID.randomUUID().toString()
         val partyName: String = "test party name"
         val partyAttributes =  Party(
             partyId,
@@ -30,6 +34,8 @@ class PartyService(
             totalCost = 0.0,
             costList = ""
         )
+
+        //partyRepository.save(party)
 
         val partyKey: String = "party:$partyId"
         redisTemplate.opsForHash<String, String>().putAll(partyKey, mapOf(

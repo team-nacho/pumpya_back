@@ -5,6 +5,7 @@ import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.redis.core.HashOperations
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.SetOperations
@@ -14,22 +15,16 @@ import java.time.ZoneOffset
 import java.util.*
 
 @Repository
-class PartyRepository @Autowired constructor(
-    private val redisTemplate: RedisTemplate<String, String>,
-    private val objectMapper: ObjectMapper,
-) {
-    private val zSetOperations: ZSetOperations<String, String> = redisTemplate.opsForZSet()
+interface PartyRepository : JpaRepository<Party, String> {
 
-    fun saveParty(partyId: UUID, partyAttributes: Party) {
+    fun saveParty(partyId: String, partyAttributes: Party) {
         val partyKey = "party:$partyId"
-
-        redisTemplate.opsForHash<String, String>()
     }
-    fun saveMember(partyId: UUID, memberId: UUID, memberAttributes: Member) {
+    fun saveMember(partyId: String, memberId: String, memberAttributes: Member) {
 
     }
 
-    fun addPartyCurrency(partyId: UUID, receipt: Receipt) {
+    fun addPartyCurrency(partyId: String, receipt: Receipt) {
         
     }
 }

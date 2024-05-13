@@ -1,4 +1,4 @@
-package com.sigma.pumpya.api
+package com.sigma.pumpya.api.controller
 
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest

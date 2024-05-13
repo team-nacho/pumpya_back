@@ -6,6 +6,6 @@ class Party(
     @field: Id
     val partyId: String,
     val partyName: String,
-    val totalCost: Double, //expected Cost By KRW
+    var totalCost: Double, //expected Cost By KRW
     val costList: String //Serialize all currenies & cost
 )

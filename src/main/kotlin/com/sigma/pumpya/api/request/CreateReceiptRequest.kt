@@ -7,7 +7,7 @@ data class CreateReceiptRequest(
     val partyId: String,
     val name: String,
     val cost: Double,
-    val join: Array<String>,
+    val joins: String,
     val currency: String,
     val createdAt: Date,
 ) {
@@ -20,7 +20,7 @@ data class CreateReceiptRequest(
         result = 31 * result + partyId.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + cost.hashCode()
-        result = 31 * result + join.contentHashCode()
+        result = 31 * result + joins.hashCode()
         result = 31 * result + currency.hashCode()
         result = 31 * result + createdAt.hashCode()
         return result

@@ -11,5 +11,5 @@ data class CreateReceiptResponse(
     val cost: Double, //how mush
     val currency: String, //what currency
     val createDate: LocalDateTime, //when
-    val join: String //whom
+    val joins: String //whom
 )

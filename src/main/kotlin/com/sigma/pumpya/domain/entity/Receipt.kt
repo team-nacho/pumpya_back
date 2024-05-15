@@ -20,5 +20,5 @@ class Receipt(
     @Column(name = "use_tag")
     val useTag: String,
     @Column(name = "join")
-    val join: String //Serialize members list
+    val joins: String //Serialize members list
 ) : BaseTimeEntity()

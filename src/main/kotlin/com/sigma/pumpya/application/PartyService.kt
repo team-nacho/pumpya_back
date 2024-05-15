@@ -8,26 +8,36 @@ import com.sigma.pumpya.api.request.CreateNewMemberRequest
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
+import com.sigma.pumpya.api.response.CreateReceiptResponse
 import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
+import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
+import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
+import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.style.ToStringCreator
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ZSetOperations
 import org.springframework.data.redis.listener.ChannelTopic
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class PartyService(
+    private val partyRepository: PartyRepository,
+    private val receiptRepository : ReceiptRepository,
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper,
+    private val redisPublisherService: RedisPublisherService
 ) {
 
     fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
-        var partyId = UUID.randomUUID()
+        var partyId = UUID.randomUUID().toString()
         val partyName: String = "test party name"
-        val partyAttributes =  Party(
+        val partyAttributes = Party(
             partyId,
             partyName,
             totalCost = 0.0,
@@ -44,6 +54,9 @@ class PartyService(
 
         val memberKey = createMember(createPartyRequest.userName);
         addNewMemberInParty(partyKey, memberKey)
+
+        //JPA
+        saveParty(partyId, partyAttributes)
 
         return CreatePartyResponse(partyAttributes)
     }
@@ -99,15 +112,6 @@ class PartyService(
         //DB에서 삭제
         //TODO 만약 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
     }
-
-    /**TODO
-     *
-     * db에서 삭제 구현
-     * 삭제 전 해당 영수증에 관련 있는 모든 데이터 업데이트
-     *
-     */
-
-
     fun endParty(partyId: String) {
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
@@ -127,4 +131,11 @@ class PartyService(
          */
     }
 
+    fun saveParty(partyId: String, partyObject: Party) {
+        //Jpa
+        partyRepository.save(partyObject)
+
+        //redis
+
+    }
 }

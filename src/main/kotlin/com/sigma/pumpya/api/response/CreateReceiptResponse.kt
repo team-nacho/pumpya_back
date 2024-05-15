@@ -5,11 +5,11 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 data class CreateReceiptResponse(
-    val receiptId: UUID,
-    val name: String,
-    val author: Member,
-    val cost: Double,
-    val currency: String,
-    val createDate: LocalDateTime,
-    val join: Array<Member>
+    val receiptId: String,
+    val name: String, //where
+    val author: String, //receipt maker
+    val cost: Double, //how mush
+    val currency: String, //what currency
+    val createDate: LocalDateTime, //when
+    val join: String //whom
 )

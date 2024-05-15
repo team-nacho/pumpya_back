@@ -1,4 +1,8 @@
 package com.sigma.pumpya.infrastructure.repository
 
-class ReceiptRepository {
-}
+import com.sigma.pumpya.domain.entity.Receipt
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
+
+@Repository
+interface ReceiptRepository : JpaRepository<Receipt, String> {}

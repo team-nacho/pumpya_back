@@ -12,6 +12,7 @@ import com.sigma.pumpya.api.response.CreateReceiptResponse
 import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
+import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
@@ -34,14 +35,14 @@ class PartyService(
     private val redisPublisherService: RedisPublisherService
 ) {
 
-    fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
+    fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
         var partyId = UUID.randomUUID().toString()
         val partyName: String = "test party name"
         val partyAttributes = Party(
             partyId,
             partyName,
             totalCost = 0.0,
-            costList = ""
+            usedCurrencies = ""
         )
 
         val partyKey: String = "party:$partyId"
@@ -56,9 +57,9 @@ class PartyService(
         addNewMemberInParty(partyKey, memberKey)
 
         //JPA
-        saveParty(partyId, partyAttributes)
+        partyRepository.save(partyAttributes)
 
-        return CreatePartyResponse(partyAttributes)
+        return partyAttributes.toDTO()
     }
     fun createMember(memberName: String): String {
         val memberId = UUID.randomUUID()

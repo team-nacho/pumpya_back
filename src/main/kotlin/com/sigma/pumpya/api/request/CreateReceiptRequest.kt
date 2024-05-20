@@ -7,7 +7,7 @@ data class CreateReceiptRequest(
     val partyId: String,
     val name: String,
     val cost: Double,
-    val joins: String,
+    val joins: Array<String>,
     val currency: String,
     val createdAt: Date,
 ) {

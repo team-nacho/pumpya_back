@@ -31,7 +31,14 @@ class PartyController(
     fun createParty(
         @Valid @RequestBody createPartyRequest: CreatePartyRequest
     ): CreatePartyResponse {
-        return partyService.createParty(createPartyRequest)
+        val createPartyResult = partyService.createParty(createPartyRequest)
+
+        return CreatePartyResponse(
+            createPartyResult.partyId,
+            createPartyResult.partyName,
+            createPartyResult.totalCost,
+            createPartyResult.usedCurrencies
+        )
     }
 
     /**TODO
@@ -48,9 +55,7 @@ class PartyController(
     @GetMapping("/get-receipts")
     fun getReceiptsWithPartyId(
         @Valid getReceiptRequest: GetReceiptRequest
-    ) {
-
-    }
+    ) {}
 
     @Operation(summary = "get members")
     @GetMapping("/get-members")

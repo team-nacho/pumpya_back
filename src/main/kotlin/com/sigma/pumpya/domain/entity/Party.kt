@@ -1,5 +1,6 @@
 package com.sigma.pumpya.domain.entity
 
+import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -18,5 +19,15 @@ class Party (
     var totalCost: Double, //expected Cost By KRW
 
     @Column(name = "cost_list")
-    var costList: String //Serialize all currenies & cost
-): BaseTimeEntity()
+    var usedCurrencies: String //Serialize all currenies & cost
+): BaseTimeEntity() {
+    fun toDTO(): PartyDTO {
+        val currenciesArray = this.usedCurrencies.split(',').toTypedArray()
+        return PartyDTO(
+            this.partyId,
+            this.partyName,
+            this.totalCost,
+            currenciesArray
+        )
+    }
+}

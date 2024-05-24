@@ -11,8 +11,10 @@ class Receipt(
     val receiptId : String,
     @Column(name = "party_id")
     val partyId: String,
+    @Column(name = "author")
+    val author : String,
     @Column(name = "receipt_name")
-    val receiptName: String, //cost use description\
+    val receiptName: String, //cost use description
     @Column(name = "cost")
     val cost : Double,
     @Column(name = "use_currency")

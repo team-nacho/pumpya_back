@@ -129,6 +129,7 @@ class PartyService(
         /**TODO
          * 레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
          */
+        pumppaya(partyId);
     }
 
     fun saveParty(partyId: String, partyObject: Party) {
@@ -136,6 +137,19 @@ class PartyService(
         partyRepository.save(partyObject)
 
         //redis
+
+    }
+
+    fun pumppaya(partyId : String) : String {
+        val receiptList : List<Receipt> = receiptRepository.findAllByPartyId(partyId);
+        val mappingTable : MutableMap<Int,String>;
+        val receipetResult : MutableMap<String, Array<Array<Double>> >;
+        if(receiptList.count() == 0) return "Error"; //Exception Handler
+        var i : Int = 0
+        for(receipt : Receipt in receiptList) {
+            mappingTable[i]
+        }
+
 
     }
 }

@@ -13,6 +13,7 @@ import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
+import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
@@ -49,7 +50,7 @@ class PartyService(
         val partyKey: String = "party:$partyId"
         redisTemplate.opsForHash<String, String>().putAll(partyKey, mapOf(
             "name" to partyName,
-            "usedCurrencies" to ""
+            "usedCurrencies" to "[]"
         ))
 
         redisTemplate.opsForSet().add("parties", partyKey);
@@ -79,10 +80,13 @@ class PartyService(
     fun getMembersWithPartyId(partyId: String): List<String> {
         val partyMembersKey = "party:$partyId:members"
         val memberSet: Set<String> = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
-        return memberSet.mapNotNull { memberId ->
-            val memberKey = "member:$memberId"
-            redisTemplate.opsForHash<String, String>().entries(memberKey)["name"]
+        var memberList: MutableList<String> = mutableListOf()
+
+        for(memberId in memberSet) {
+            val name = redisTemplate.opsForHash<String, String>().entries(memberId)["name"]!!
+            memberList.add(name)
         }
+        return memberList
     }
 
     /**TODO
@@ -91,6 +95,7 @@ class PartyService(
      *
      */
     fun getPartyInfo(partyKey:String): Map<String, String> {
+        //hash에서 name, costList
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
@@ -98,16 +103,33 @@ class PartyService(
         val partyKey: String = "party:${createReceiptRequest.partyId}"
 
         //TODO saveDB
+        val newReceipt = ReceiptDTO(
+            receiptId,
+            createReceiptRequest.partyId,
+            createReceiptRequest.receiptName,
+            createReceiptRequest.cost,
+            objectMapper.writeValueAsString(createReceiptRequest.joins),
+            createReceiptRequest.useCurrency,
+            createReceiptRequest.createdAt,
+            createReceiptRequest.tag
+        )
         //get party info. if not exist currency, add
         val partyInfo = getPartyInfo(partyKey)
-        val currencyList = objectMapper
-            .readValue<Array<String>>(partyInfo["usedCurrencies"], Array<String>::class.java).toMutableList()
+
+        val currencyList = try {
+            objectMapper
+                .readValue<Array<String>>(partyInfo["usedCurrencies"].toString(), Array<String>::class.java).toMutableList()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
 
         //TODO 바꾸면 좋지만 일단 넣어두고 중복제거
-        currencyList.add(createReceiptRequest.currency)
-        val currencyListToString = currencyList.distinct().toString()
+        currencyList.add(createReceiptRequest.useCurrency)
+        val currencyListToString = objectMapper.writeValueAsString(currencyList.distinct())
 
         redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
+        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(newReceipt) )
+
         return receiptId
     }
     fun deleteReceipt(receiptId: String) {

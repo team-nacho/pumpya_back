@@ -25,7 +25,7 @@ class STOMPController(
         @Valid createReceiptRequest: CreateReceiptRequest
     ) {
         val receiptId: String = partyService.saveReceipt(createReceiptRequest)
-        redisPublisherService.publishReceiptMessage(receiptId,Topic.RECEIPT_CREATED.name)
+
     }
     @Operation(summary = "end party")
     @MessageMapping("/party/{partyId}/end")
@@ -50,7 +50,7 @@ class STOMPController(
     ) {
         //db에서 삭제 후 레디스에 없데이트
         partyService.deleteReceipt(receiptId);
-        redisPublisherService.publishReceiptMessage(partyId, Topic.RECEIPT_DELETED.name)
+        redisPublisherService.publishReceiptMessage(partyId, Topic.RECEIPT_DELETED.name, "")
     }
     @Operation(summary = "create member")
     @MessageMapping("/party/{partyId}/new-member")
@@ -61,6 +61,6 @@ class STOMPController(
         val partyKey = "party:$partyId"
         val memberKey = partyService.createMember(request.name)
         partyService.addNewMemberInParty(partyKey, memberKey)
-        redisPublisherService.publishMemberMessage(partyId, Topic.MEMBER_REGISTERED.name)
+        redisPublisherService.publishMemberMessage(partyId, Topic.MEMBER_REGISTERED.name, request.name)
     }
 }

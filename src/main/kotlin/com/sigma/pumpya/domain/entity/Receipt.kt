@@ -18,7 +18,7 @@ class Receipt(
     @Column(name = "cost")
     val cost : Double,
     @Column(name = "use_currency")
-    val useCrrency: String,
+    val useCurrency: String,
     @Column(name = "use_tag")
     val useTag: String,
     @Column(name = "join")

@@ -16,6 +16,8 @@ import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import jakarta.transaction.Transactional
+import jakarta.validation.constraints.Null
+import org.apache.commons.lang3.ObjectUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.style.ToStringCreator
 import org.springframework.data.redis.core.RedisTemplate
@@ -140,16 +142,57 @@ class PartyService(
 
     }
 
-    fun pumppaya(partyId : String) : String {
-        val receiptList : List<Receipt> = receiptRepository.findAllByPartyId(partyId);
-        val mappingTable : MutableMap<Int,String>;
-        val receipetResult : MutableMap<String, Array<Array<Double>> >;
-        if(receiptList.count() == 0) return "Error"; //Exception Handler
-        var i : Int = 0
-        for(receipt : Receipt in receiptList) {
-            mappingTable[i]
+    fun pumppaya(partyId : String) : Map<String, Map<String, Array<Array<Double>>>> {
+        val receiptList: List<Receipt> = receiptRepository.findAllByPartyId(partyId)
+        if (receiptList.isEmpty()) return emptyMap() // Exception Handler
+
+        val mappingTable: MutableMap<String, Int> = mutableMapOf()
+        val receiptResult: MutableMap<String, Array<Array<Double>>> = mutableMapOf()
+        var memberCount = 0
+
+        // 멤버 목록 초기화
+        for (receipt in receiptList) {
+            val members = receipt.joins.split(",").toSet()
+            for (member in members) {
+                if (mappingTable.containsKey(member)) continue
+                mappingTable[member] = memberCount
+                memberCount++
+            }
         }
 
+        // 초기 결과 배열 생성
+        for ((currency, _) in receiptResult) {
+            receiptResult[currency] = Array(memberCount) { Array(memberCount) { 0.0 } }
+        }
 
+        // 금액 계산
+        for (receipt in receiptList) {
+            val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
+            val cost = receipt.cost / members
+            val currency = receipt.useCurrency
+            if (!receiptResult.containsKey(currency)) {
+                receiptResult[currency] = Array(memberCount) { Array(memberCount) { 0.0 } }
+            }
+
+            val authorIndex = mappingTable[receipt.author]!!
+            for ((member, index) in mappingTable) {
+                if (member != receipt.author) {
+                    receiptResult[currency]!![index][authorIndex] += cost
+                }
+            }
+        }
+
+        // 결과 맵 생성
+        val result: MutableMap<String, Map<String, Array<Array<Double>>>> = mutableMapOf()
+        for ((currency, currencyResult) in receiptResult) {
+            val currencyMap: MutableMap<String, Array<Array<Double>>> = mutableMapOf()
+            for (i in currencyResult.indices) {
+                val fromMember = mappingTable.entries.first { it.value == i }.key
+                currencyMap[fromMember] = currencyResult
+            }
+            result[currency] = currencyMap
+        }
+
+        return result
     }
 }

@@ -12,11 +12,12 @@ class ReceiptService (
         val receiptObject = Receipt(
             receiptId = createReceiptRequest.receiptId,
             partyId = createReceiptRequest.partyId,
+            author = createReceiptRequest.name,
             receiptName = createReceiptRequest.name,
             cost = createReceiptRequest.cost,
             useCrrency = createReceiptRequest.currency,
             useTag = "", // useTag가 CreateReceiptRequest에 없으므로 빈 문자열 또는 기본값을 설정
-            joins = createReceiptRequest.join.joinToString(","), // Array<String>을 콤마로 구분된 String으로 변환
+            joins = createReceiptRequest.joins, // Array<String>을 콤마로 구분된 String으로 변환
             // createdAt을 LocalDateTime으로 변환
             // BaseEntity의 @CreatedDate와 @LastModifiedDate는 자동으로 처리되므로 여기서 직접 설정할 필요는 없음
         )

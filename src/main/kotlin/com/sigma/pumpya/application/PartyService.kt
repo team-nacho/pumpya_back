@@ -38,6 +38,7 @@ class PartyService(
     fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
         var partyId = UUID.randomUUID().toString()
         val partyName: String = "test party name"
+        //Party DTO
         val partyAttributes = Party(
             partyId,
             partyName,

@@ -3,7 +3,6 @@ package com.sigma.pumpya.api.request
 import java.util.*
 
 data class CreateReceiptRequest(
-    val receiptId: String,
     val partyId: String,
     val name: String,
     val cost: Double,
@@ -16,7 +15,7 @@ data class CreateReceiptRequest(
         return super.equals(other)
     }
     override fun hashCode(): Int {
-        var result = receiptId.hashCode()
+        var result = partyId.hashCode()
         result = 31 * result + partyId.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + cost.hashCode()

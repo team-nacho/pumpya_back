@@ -40,7 +40,6 @@ class PartyController(
             createPartyResult.usedCurrencies
         )
     }
-
     /**TODO
      * 파티 아이디로 정산 결과 가져오기
      */
@@ -64,4 +63,10 @@ class PartyController(
     ): GetMembersResponse {
         return GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
     }
+    /**TODO
+
+        파티 정보 가져오기
+     */
+    @GetMapping("/get-party")
+    fun getPartyWithPartyId() {}
 }

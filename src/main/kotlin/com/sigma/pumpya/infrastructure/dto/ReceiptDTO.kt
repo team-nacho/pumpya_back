@@ -9,7 +9,7 @@ data class ReceiptDTO(
     val partyId: String,
     val receiptName: String,
     val cost: Double,
-    val join: String,
+    val joins: String,
     val useCurrency: Currency,
     val createDate: Date,
     val useTag : Tag

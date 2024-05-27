@@ -7,8 +7,9 @@ data class CreateReceiptRequest(
     val name: String,
     val cost: Double,
     val joins: Array<String>,
-    val currency: String,
+    val useCurrency: String,
     val createdAt: Date,
+    val tag: String,
 ) {
     override fun equals(other: Any?): Boolean {
         //이 객체는 누구와도 비교하지 않는 클래스이기 때문에 pass
@@ -20,8 +21,10 @@ data class CreateReceiptRequest(
         result = 31 * result + name.hashCode()
         result = 31 * result + cost.hashCode()
         result = 31 * result + joins.hashCode()
-        result = 31 * result + currency.hashCode()
+        result = 31 * result + useCurrency.hashCode()
         result = 31 * result + createdAt.hashCode()
+        result = 32 * result + tag.hashCode()
+
         return result
     }
 }

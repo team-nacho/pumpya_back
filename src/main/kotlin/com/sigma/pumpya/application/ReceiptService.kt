@@ -15,7 +15,7 @@ class ReceiptService (
             author = createReceiptRequest.name,
             receiptName = createReceiptRequest.name,
             cost = createReceiptRequest.cost,
-            useCrrency = createReceiptRequest.currency,
+            useCurrency = createReceiptRequest.currency,
             useTag = "", // useTag가 CreateReceiptRequest에 없으므로 빈 문자열 또는 기본값을 설정
             joins = createReceiptRequest.joins, // Array<String>을 콤마로 구분된 String으로 변환
             // createdAt을 LocalDateTime으로 변환
@@ -24,5 +24,9 @@ class ReceiptService (
 
         // JPA 리포지토리를 사용해 데이터베이스에 저장
         receiptRepository.save(receiptObject)
+    }
+
+    fun getReceipt(receiptId: String): Receipt {
+        return receiptRepository.findById(receiptId).get()
     }
 }

@@ -3,7 +3,6 @@ package com.sigma.pumpya.api.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetMembersRequest
-import com.sigma.pumpya.api.request.GetReceiptRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
@@ -23,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "party Api")
 @RestController("/party")
 class PartyController(
-    private val partyService: PartyService,
+    private val partyService: PartyService
 ) {
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")

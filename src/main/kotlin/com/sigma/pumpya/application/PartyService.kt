@@ -1,15 +1,8 @@
 package com.sigma.pumpya.application
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValues
-import com.sigma.pumpya.api.request.CreateNewMemberRequest
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
-import com.sigma.pumpya.api.response.CreatePartyResponse
-import com.sigma.pumpya.api.response.CreateReceiptResponse
-import com.sigma.pumpya.domain.entity.Member
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
@@ -19,27 +12,20 @@ import com.sigma.pumpya.infrastructure.repository.CurrencyRepository
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import com.sigma.pumpya.infrastructure.repository.TagRepository
-import jakarta.transaction.Transactional
-import jakarta.validation.constraints.Null
-import org.apache.commons.lang3.ObjectUtils
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.style.ToStringCreator
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.core.ZSetOperations
-import org.springframework.data.redis.listener.ChannelTopic
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class PartyService(
     private val partyRepository: PartyRepository,
-    private val receiptRepository : ReceiptRepository,
+    private val receiptRepository: ReceiptRepository,
     private val currencyRepository: CurrencyRepository,
     private val tagRepository: TagRepository,
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper,
-    private val redisPublisherService: RedisPublisherService
+    private val redisPublisherService: RedisPublisherService,
+    private val receiptService: ReceiptService
 ) {
 
     fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
@@ -102,7 +88,7 @@ class PartyService(
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
 
-    fun getReceiptsByPartyId(partyId : String): List<Receipt> {
+    fun getReceiptsByPartyId(partyId : String): List<ReceiptDTO> {
         return receiptRepository.findAllByPartyId(partyId)
     }
 
@@ -115,18 +101,19 @@ class PartyService(
         val receiptId: String = UUID.randomUUID().toString()
         val partyKey: String = "party:${createReceiptRequest.partyId}"
 
-        val newReceipt = ReceiptDTO(
+        val newReceipt = Receipt(
             receiptId,
-            createReceiptRequest.partyId,
+            partyKey,
+            createReceiptRequest.author,
             createReceiptRequest.receiptName,
             createReceiptRequest.cost,
             objectMapper.writeValueAsString(createReceiptRequest.joins),
             createReceiptRequest.useCurrency,
-            createReceiptRequest.createdAt,
-            createReceiptRequest.tag
+            createReceiptRequest.useTag,
           )
-        
-        receiptRepository.save(receiptObject)
+
+        //receipt save in DB
+        receiptService.saveReceipt(createReceiptRequest)
         //get party info. if not exist currency, add
         val partyInfo = getPartyInfo(partyKey)
 
@@ -160,7 +147,8 @@ class PartyService(
             if (otherReceipts.isEmpty()) {
                 // 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
                 val partyObject = partyRepository.findById(partyId)
-                val useCurrencies = partyObject.get().costList
+                val useCurrencies = partyObject.get().usedCurrencies
+
                 if( useCurrencies.contains(useCurrency) ) {
                     val currencyList = useCurrencies.split(",").filter { currencyPair ->
                         val (currency, _) = currencyPair.split(":")
@@ -171,7 +159,7 @@ class PartyService(
                         partyId = partyObject.get().partyId,
                         partyName = partyObject.get().partyName,
                         totalCost = partyObject.get().totalCost,
-                        costList = currencyList
+                        usedCurrencies = currencyList
                     )
                     partyRepository.save(updatedParty)
                 }
@@ -205,16 +193,8 @@ class PartyService(
         pumppaya(partyId);
     }
 
-    fun saveParty(partyId: String, partyObject: Party) {
-        //Jpa
-        partyRepository.save(partyObject)
-
-        //redis
-
-    }
-
     fun pumppaya(partyId : String) : Map<String, Map<String, Array<Array<Double>>>> {
-        val receiptList: List<Receipt> = receiptRepository.findAllByPartyId(partyId)
+        val receiptList: List<ReceiptDTO> = receiptRepository.findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
 
         val mappingTable: MutableMap<String, Int> = mutableMapOf()

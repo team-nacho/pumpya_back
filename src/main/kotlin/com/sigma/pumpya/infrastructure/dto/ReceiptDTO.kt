@@ -7,10 +7,11 @@ import java.util.*
 data class ReceiptDTO(
     val receiptId : String,
     val partyId: String,
+    val author : String,
     val receiptName: String,
     val cost: Double,
-    val joins: String,
     val useCurrency: String,
+    val useTag : String,
+    val joins: String,
     val createdAt: Date,
-    val useTag : String
 )

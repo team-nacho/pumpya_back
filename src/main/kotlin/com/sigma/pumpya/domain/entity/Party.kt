@@ -8,16 +8,12 @@ import java.util.*
 
 @Entity(name = "party")
 class Party (
-
     @Id
     val partyId: String,
-
     @Column(name = "party_name")
     val partyName: String,
-
     @Column(name = "total_cost")
     var totalCost: Double, //expected Cost By KRW
-
     @Column(name = "cost_list")
     var usedCurrencies: String //Serialize all currenies & cost
 ): BaseTimeEntity() {

@@ -10,6 +10,7 @@ import com.sigma.pumpya.api.response.GetPartyResponse
 import com.sigma.pumpya.application.PartyService
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
+import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController("/party")
 class PartyController(
     private val partyService: PartyService,
-    private val receiptRepository: ReceiptRepository,
 ) {
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")
@@ -58,8 +58,8 @@ class PartyController(
     @GetMapping("/get-receipts/{partyId}")
     fun getReceiptsWithPartyId(
          @PathVariable partyId: String
-    ): List<Receipt> {
-        return partyService.getReceiptsByPartyId(getReceiptRequest.partyId)
+    ): List<ReceiptDTO> {
+        return partyService.getReceiptsByPartyId(partyId)
     }
 
     @Operation(summary = "get members")
@@ -79,12 +79,12 @@ class PartyController(
     ): GetPartyResponse {
         val partyKey: String = "party:${partyId}"
         val partyInfo = partyService.getPartyInfo(partyKey)
-        val memebers = partyService.getMembersWithPartyId(partyId)
+        val members = partyService.getMembersWithPartyId(partyId)
         return GetPartyResponse(
             partyId,
             partyInfo["name"]!!,
             jacksonObjectMapper().readValue(partyInfo["usedCurrencies"]!!.toString(), Array<String>::class.java).toMutableList(),
-            memebers
+            members
         )
     }
 }

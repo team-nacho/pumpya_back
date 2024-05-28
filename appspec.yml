@@ -1,0 +1,24 @@
+version: 0.0
+os: linux
+files:
+  - source: /pump.jar
+    destination: /home/ec2-user/pump.jar
+  - source: /scripts/change-script-permissions.sh
+    destination: /home/ec2-user/change-script-permissions.sh
+  - source: /scripts/delete-before-artifacts.sh
+    destination: /home/ec2-user/delete-before-artifacts.sh
+  - source: /scripts/run-application.sh
+    destination: /home/ec2-user/run-application.sh
+
+hooks:
+  BeforeInstall:
+    - location: /home/ec2-user/change-script-permissions.sh
+      timeout: 300
+      runas: ec2-user
+    - location: /home/ec2-user/delete-before-artifacts.sh
+      timeout: 300
+      runas: ec2-user
+  AfterInstall:
+    - location: /home/ec2-user/run-application.sh
+      timeout: 300
+      runas: ec2-user

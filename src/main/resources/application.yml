@@ -7,16 +7,17 @@ spring:
       name: ${redis_cloud_name}
       repositories:
         enabled: false
-    datasource:
-      url: ${aws_rds_url}
-      username: ${aws_rds_name}
-      password: ${aws_rds_password}
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${aws_rds_url}
+    username: ${aws_rds_name}
+    password: ${aws_rds_password}
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         show_sql: true
 springdoc:

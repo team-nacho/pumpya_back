@@ -2,6 +2,8 @@ package com.sigma.pumpya.application
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.sigma.pumpya.domain.entity.Receipt
+import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
 import org.springframework.data.redis.connection.Message
 import org.springframework.data.redis.connection.MessageListener
@@ -24,9 +26,9 @@ class ReceiptSubscriberService(
 
                 val topic: String = messageMap["topic"].toString()
                 val id: String = messageMap["id"].toString()
-
+                val receipt: ReceiptDTO = objectMapper.readValue(messageMap["receipt"].toString(), ReceiptDTO::class.java)
                 when(topic) {
-                    Topic.RECEIPT_CREATED.name -> handleCreateReceipt(id)
+                    Topic.RECEIPT_CREATED.name -> handleCreateReceipt(id, receipt)
                     Topic.RECEIPT_DELETED.name -> handleDeleteReceipt(id)
                 }
 
@@ -37,14 +39,10 @@ class ReceiptSubscriberService(
         }
 
     }
-    private fun handleCreateReceipt(receiptId: String) {
-        val partyId: String = "aaec004b-5137-4996-b5dc-627213c7f648"
-        //영수증 정보에 파티 정보가 있으니 그대로 전달하면 됨
-        messagingTemplate.convertAndSend("/sub/receipt/$partyId", receiptId)
+    private fun handleCreateReceipt(receiptId: String, receipt: ReceiptDTO) {
+        messagingTemplate.convertAndSend("/sub/receipt/${receipt.partyId}", objectMapper.writeValueAsString(receipt))
     }
     private fun handleDeleteReceipt(partyId: String) {
-        val partyId: String = "aaec004b-5137-4996-b5dc-627213c7f648"
-        //영수증 정보에 파티 정보가 있으니 그대로 전달하면 됨
         messagingTemplate.convertAndSend("/sub/receipt/$partyId/delete", partyId)
 
     }

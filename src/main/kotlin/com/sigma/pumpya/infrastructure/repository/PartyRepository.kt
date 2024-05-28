@@ -7,4 +7,4 @@ import org.springframework.stereotype.Repository
 
 
 @Repository
-interface PartyRepository : JpaRepository<Party, String> { }
+interface PartyRepository : JpaRepository<Party, String> {}

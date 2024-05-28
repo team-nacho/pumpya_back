@@ -25,8 +25,9 @@ class MemberSubscriberService(
 
                 val topic: String = messageMap["topic"].toString()
                 val id: String = messageMap["id"].toString()
+                val name: String = messageMap["name"].toString()
                 when(topic) {
-                    Topic.MEMBER_REGISTERED.name -> handleMember(id)
+                    Topic.MEMBER_REGISTERED.name -> handleMember(id, name)
                 }
             } catch (e: Exception) {
                 // 메시지 처리 중 오류 발생 시 예외 처리
@@ -36,8 +37,7 @@ class MemberSubscriberService(
 
     }
 
-    private fun handleMember(partyId: String) {
-        val memberId = "test id"
-        messagingTemplate.convertAndSend("/sub/party/${partyId}/member", memberId)
+    private fun handleMember(partyId: String, name: String) {
+        messagingTemplate.convertAndSend("/sub/party/${partyId}/member", objectMapper.writeValueAsString(name))
     }
 }

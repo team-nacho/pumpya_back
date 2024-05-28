@@ -8,6 +8,8 @@ import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
 import com.sigma.pumpya.application.PartyService
 import com.sigma.pumpya.domain.entity.Receipt
+import com.sigma.pumpya.infrastructure.dto.PartyDTO
+import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -55,7 +57,7 @@ class PartyController(
     @GetMapping("/get-receipts/{partyId}")
     fun getReceiptsWithPartyId(
          @PathVariable partyId: String
-    ): List<Receipt> {
+    ): List<ReceiptDTO> {
         return partyService.getReceiptsByPartyId(partyId)
     }
 
@@ -76,12 +78,12 @@ class PartyController(
     ): GetPartyResponse {
         val partyKey: String = "party:${partyId}"
         val partyInfo = partyService.getPartyInfo(partyKey)
-        val memebers = partyService.getMembersWithPartyId(partyId)
+        val members = partyService.getMembersWithPartyId(partyId)
         return GetPartyResponse(
             partyId,
             partyInfo["name"]!!,
             jacksonObjectMapper().readValue(partyInfo["usedCurrencies"]!!.toString(), Array<String>::class.java).toMutableList(),
-            memebers
+            members
         )
     }
 }

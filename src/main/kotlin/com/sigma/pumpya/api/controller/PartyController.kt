@@ -3,13 +3,11 @@ package com.sigma.pumpya.api.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetMembersRequest
-import com.sigma.pumpya.api.request.GetReceiptRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
 import com.sigma.pumpya.application.PartyService
 import com.sigma.pumpya.domain.entity.Receipt
-import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -22,8 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "party Api")
 @RestController("/party")
 class PartyController(
-    private val partyService: PartyService,
-    private val receiptRepository: ReceiptRepository,
+    private val partyService: PartyService
 ) {
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")
@@ -59,7 +56,7 @@ class PartyController(
     fun getReceiptsWithPartyId(
          @PathVariable partyId: String
     ): List<Receipt> {
-        return partyService.getReceiptsByPartyId(getReceiptRequest.partyId)
+        return partyService.getReceiptsByPartyId(partyId)
     }
 
     @Operation(summary = "get members")

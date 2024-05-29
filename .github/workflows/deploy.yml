@@ -50,9 +50,22 @@ jobs:
         run: ./gradlew build -x test
         shell: bash
 
+      - name: List build/libs directory
+        run: ls -l build/libs
+        shell: bash
+
+      - name: List scripts directory
+        run: ls -l scripts
+        shell: bash
+
       - name: Make zip file
         run: zip -r $GITHUB_SHA.zip build/libs/*.jar scripts/*.sh
         shell: bash
+
+      - name: List contents of zip file
+        run: unzip -l $GITHUB_SHA.zip
+        shell: bash
+
 
       - name: Configure AWS credentials
         uses: aws-action/configure-aws-credentials@v1

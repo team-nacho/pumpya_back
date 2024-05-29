@@ -59,7 +59,7 @@ jobs:
         shell: bash
 
       - name: Make zip file
-        run: zip -r $GITHUB_SHA.zip build/libs/*.jar scripts/*.sh
+        run: zip -r $GITHUB_SHA.zip build/libs/*.jar scripts/*.sh appspec.yml
         shell: bash
 
       - name: List contents of zip file

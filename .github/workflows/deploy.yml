@@ -9,13 +9,6 @@ env:
   S3_BUCKET_NAME : ${{ secrets.S3_BUCKET }}
   CODE_DEPLOY_APPLICATION_NAME: ${{ secrets.CODEDEPLOY_APPLICATION_NAME }}
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}
-  REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
-  REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
-  REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
-  REDIS_CLOUD_NAME: ${{ secrets.REDIS_CLOUD_NAME }}
-  AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
-  AWS_RDS_NAME: ${{ secrets.AWS_RDS_NAME }}
-  AWS_RDS_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
 
 jobs:
   build:
@@ -46,6 +39,14 @@ jobs:
         shell: bash
 
       - name: Build with Gradle
+        env:
+          REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
+          REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
+          REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
+          REDIS_CLOUD_NAME: ${{ secrets.REDIS_CLOUD_NAME }}
+          AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
+          AWS_RDS_NAME: ${{ secrets.AWS_RDS_NAME }}
+          AWS_RDS_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
         run: ./gradlew build -x test
         shell: bash
 

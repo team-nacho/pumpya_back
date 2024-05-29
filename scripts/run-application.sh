@@ -16,6 +16,14 @@ AWS_RDS_URL=$(aws ssm get-parameter --name "RDS_URL" --with-decryption --query "
 AWS_RDS_NAME=$(aws ssm get-parameter --name "RDS_NAME" --with-decryption --query "Parameter.Value" --output text)
 AWS_RDS_PASSWORD=$(aws ssm get-parameter --name "RDS_PASSWORD" --with-decryption --query "Parameter.Value" --output text)
 
+echo "REDIS_CLOUD_HOST: $REDIS_CLOUD_HOST"
+echo "REDIS_CLOUD_PORT: $REDIS_CLOUD_PORT"
+echo "REDIS_CLOUD_PASSWORD: $REDIS_CLOUD_PASSWORD"
+echo "REDIS_CLOUD_NAME: $REDIS_CLOUD_NAME"
+echo "AWS_RDS_URL: $AWS_RDS_URL"
+echo "AWS_RDS_NAME: $AWS_RDS_NAME"
+echo "AWS_RDS_PASSWORD: $AWS_RDS_PASSWORD"
+
 export REDIS_CLOUD_HOST
 export REDIS_CLOUD_PORT
 export REDIS_CLOUD_PASSWORD
@@ -23,6 +31,8 @@ export REDIS_CLOUD_NAME
 export AWS_RDS_URL
 export AWS_RDS_NAME
 export AWS_RDS_PASSWORD
+
+
 
 
 # Start Spring Boot application

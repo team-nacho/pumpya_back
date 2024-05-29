@@ -5,6 +5,6 @@ if pgrep -f "pump.jar" > /dev/null; then
 fi
 
 # Remove the old artifact
-if [ -f /home/ec2-user/pump.jar ]; then
-    rm /home/ec2-user/pump.jar
+if [ -f /home/ec2-user/pump ]; then
+    rm /home/ec2-user/pump
 fi

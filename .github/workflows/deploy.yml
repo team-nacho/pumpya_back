@@ -9,13 +9,13 @@ env:
   S3_BUCKET_NAME : ${{ secrets.S3_BUCKET }}
   CODE_DEPLOY_APPLICATION_NAME: ${{ secrets.CODEDEPLOY_APPLICATION_NAME }}
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}
-  redis_cloud_host: ${{ secrets.REDIS_CLOUD_HOST }}
-  redis_cloud_port: ${{ secrets.REDIS_CLOUD_PORT }}
-  redis_cloud_password: ${{ secrets.REDIS_CLOUD_PASSWORD }}
-  redis_cloud_name: ${{ secrets.REDIS_CLOUD_NAME }}
-  aws_rds_url: ${{ secrets.AWS_RDS_URL }}
-  aws_rds_name: ${{ secrets.AWS_RDS_NAME }}
-  aws_rds_password: ${{ secrets.AWS_RDS_PASSWORD }}
+  REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
+  REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
+  REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
+  REDIS_CLOUD_NAME: ${{ secrets.REDIS_CLOUD_NAME }}
+  AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
+  AWS_RDS_NAME: ${{ secrets.AWS_RDS_NAME }}
+  AWS_RDS_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
 
 jobs:
   build:

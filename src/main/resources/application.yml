@@ -1,17 +1,17 @@
 spring:
   data:
     redis:
-      host: ${redis_cloud_host}
-      port: ${redis_cloud_port}
-      password: ${redis_cloud_password}
-      name: ${redis_cloud_name}
+      host: ${REDIS_CLOUD_HOST}
+      port: ${REDIS_CLOUD_PORT}
+      password: ${REDIS_CLOUD_PASSWORD}
+      name: ${REDIS_CLOUD_NAME}
       repositories:
         enabled: false
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${aws_rds_url}
-    username: ${aws_rds_name}
-    password: ${aws_rds_password}
+    url: ${AWS_RDS_URL}
+    username: ${AWS_RDS_NAME}
+    password: ${AWS_RDS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update

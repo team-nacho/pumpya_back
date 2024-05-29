@@ -13,6 +13,7 @@ import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -42,10 +43,13 @@ class PartyController(
      * Com?
      * 파티 아이디로 정산 결과 가져오기
      */
+    //TODO
     @Operation(summary = "Get Pumppay Result")
-    @GetMapping("/get-pumppay-result")
-    fun getDutchResultWithPartyId(partyId : String) : Map<String, Map<String, Array<Array<Double>>>>  {
-        return partyService.pumppaya(partyId)
+    @GetMapping("/get-pumppay-result/{partyId}")
+    fun getDutchResultWithPartyId(@PathVariable partyId : String) : Map<String, Map<String, Map<String, Double>>> {
+        val result = partyService.pumppaya(partyId)
+        if (result.isEmpty())  return emptyMap()
+        else return result
     }
 
     /**TODO
@@ -53,7 +57,8 @@ class PartyController(
      *
      *
      */
-     
+
+     //TODO
     @GetMapping("/get-receipts/{partyId}")
     fun getReceiptsWithPartyId(
          @PathVariable partyId: String
@@ -64,9 +69,11 @@ class PartyController(
     @Operation(summary = "get members")
     @PostMapping("/get-members")
     fun getMembersWithPartyId(
-        @Valid getMemberRequest: GetMembersRequest
+        @Valid @RequestBody getMemberRequest: GetMembersRequest
     ): GetMembersResponse {
-        return GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
+        val result = GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
+        if(result.members.isEmpty()) { return GetMembersResponse(emptyList()) }
+        return result
     }
     /**TODO
         파티 정보 가져오기

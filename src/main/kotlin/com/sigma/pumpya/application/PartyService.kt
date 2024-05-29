@@ -89,7 +89,7 @@ class PartyService(
     }
 
     fun getReceiptsByPartyId(partyId : String): List<ReceiptDTO> {
-        return receiptRepository.findAllByPartyId(partyId)
+        return findAllByPartyId(partyId)
     }
 
     /**TODO
@@ -143,7 +143,7 @@ class PartyService(
             val useCurrency = receipt.get().useCurrency
 
             // 해당 통화에 대한 다른 영수증이 있는지 확인
-            val otherReceipts = receiptRepository.findAllByUseCurrency(useCurrency)
+            val otherReceipts = findAllByUseCurrency(useCurrency)
             if (otherReceipts.isEmpty()) {
                 // 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
                 val partyObject = partyRepository.findById(partyId)
@@ -193,57 +193,88 @@ class PartyService(
         pumppaya(partyId);
     }
 
-    fun pumppaya(partyId : String) : Map<String, Map<String, Array<Array<Double>>>> {
-        val receiptList: List<ReceiptDTO> = receiptRepository.findAllByPartyId(partyId)
+    fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
+        val receiptList: List<ReceiptDTO> = findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
 
         val mappingTable: MutableMap<String, Int> = mutableMapOf()
-        val receiptResult: MutableMap<String, Array<Array<Double>>> = mutableMapOf()
-        var memberCount = 0
+        val receiptResult: MutableMap<String, MutableMap<String, MutableMap<String, Double>>> = mutableMapOf()
+        var memberIndex : Int = 0
 
         // 멤버 목록 초기화
         for (receipt in receiptList) {
             val members = receipt.joins.split(",").toSet()
+
+            // receipt author 추가
+            if (!mappingTable.containsKey(receipt.author)) {
+                mappingTable[receipt.author] = memberIndex
+                memberIndex++
+            }
             for (member in members) {
                 if (mappingTable.containsKey(member)) continue
-                mappingTable[member] = memberCount
-                memberCount++
+                mappingTable[member] = memberIndex
+                memberIndex++
             }
         }
 
-        // 초기 결과 배열 생성
-        for ((currency, _) in receiptResult) {
-            receiptResult[currency] = Array(memberCount) { Array(memberCount) { 0.0 } }
-        }
-
         // 금액 계산
+//        for (receipt in receiptList) {
+//            val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
+//            val cost = receipt.cost / members
+//            val currency = receipt.useCurrency
+//            if (!receiptResult.containsKey(currency)) {
+//                receiptResult[currency] = mutableMapOf()
+//            }
+//
+//            for ((member, index) in mappingTable) {
+//                if (!receiptResult[currency]!!.containsKey(member)) {
+//                    receiptResult[currency]!![member] = mutableMapOf()
+//                }
+//                receiptResult[currency]!![member]!![receipt.author] = (receiptResult[currency]!![member]!![receipt.author] ?: 0.0) + cost
+//            }
+//        }
         for (receipt in receiptList) {
             val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
             val cost = receipt.cost / members
             val currency = receipt.useCurrency
-            if (!receiptResult.containsKey(currency)) {
-                receiptResult[currency] = Array(memberCount) { Array(memberCount) { 0.0 } }
-            }
+            val authorIndex = mappingTable[receipt.author] ?: continue // 발행자가 없으면 건너뛰기
 
-            val authorIndex = mappingTable[receipt.author]!!
+            receiptResult.getOrPut(currency) { mutableMapOf() }
+                .getOrPut(receipt.author) { mutableMapOf() }
+
             for ((member, index) in mappingTable) {
                 if (member != receipt.author) {
-                    receiptResult[currency]!![index][authorIndex] += cost
+                    receiptResult[currency]!![member]
+                        ?.getOrPut(receipt.author) { 0.0 }
+                        ?.plus(cost)
                 }
             }
         }
 
-        // 결과 맵 생성
-        val result: MutableMap<String, Map<String, Array<Array<Double>>>> = mutableMapOf()
-        for ((currency, currencyResult) in receiptResult) {
-            val currencyMap: MutableMap<String, Array<Array<Double>>> = mutableMapOf()
-            for (i in currencyResult.indices) {
-                val fromMember = mappingTable.entries.first { it.value == i }.key
-                currencyMap[fromMember] = currencyResult
-            }
-            result[currency] = currencyMap
-        }
+        return receiptResult
+    }
 
+    fun findAllByPartyId(partyId: String): List<ReceiptDTO> {
+        val receiptList = receiptRepository.findAll()
+        val result = mutableListOf<ReceiptDTO>()
+        for(receipt in receiptList) {
+            if(receipt.partyId == partyId) {
+                result.add(receipt.toDTO())
+            }
+        }
+        if(receiptList.isEmpty()) return mutableListOf<ReceiptDTO>() //Error Emerge
+        return result
+    }
+
+    fun findAllByUseCurrency(useCurrency: String) : List<ReceiptDTO>{
+        val receiptList = receiptRepository.findAll()
+        val result = mutableListOf<ReceiptDTO>()
+        for(receipt in receiptList) {
+            if(receipt.useCurrency == useCurrency) {
+                result.add(receipt.toDTO())
+            }
+        }
+        if(receiptList.isEmpty()) return mutableListOf<ReceiptDTO>() //Error Emerge
         return result
     }
 }

@@ -1,10 +1,12 @@
 #!/bin/bash
 
-fuser -k -n tcp 3000
+# Log directories
+LOG_DIR="/home/ec2-user/log"
+APP_LOG="$LOG_DIR/app.log"
+ERROR_LOG="$LOG_DIR/app-error.log"
 
-rm -rf ~/log/pump_back.log
-rm -rf ~/log/pump_back-error.log
-cp /home/ec2-user/pump.jar /opt/pump/app.jar
+# Ensure log directory exists
+mkdir -p $LOG_DIR
 
-# Restart the application
-nohup java -jar /home/ec2-user/your-app.jar >> /home/ec2-user/log/app.log 2>> /home/ec2-user/log/app-error.log &
+# Start Spring Boot application
+nohup java -jar /home/ec2-user/pump/build/libs/pumpya-0.0.1-SNAPSHOT.jar >> $APP_LOG 2>> $ERROR_LOG &

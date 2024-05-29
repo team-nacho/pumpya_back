@@ -25,7 +25,6 @@ class STOMPController(
         @Valid createReceiptRequest: CreateReceiptRequest
     ) {
         val receiptId: String = partyService.saveReceipt(createReceiptRequest)
-
     }
     @Operation(summary = "end party")
     @MessageMapping("/party/{partyId}/end")

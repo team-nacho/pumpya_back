@@ -36,6 +36,7 @@ class PartyController(
             createPartyResult.partyName,
             createPartyResult.totalCost,
             createPartyResult.usedCurrencies
+
         )
     }
     /**TODO

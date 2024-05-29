@@ -39,7 +39,6 @@ jobs:
         shell: bash
 
       - name: Build with Gradle
-        env:
         run: ./gradlew build -x test --info
 
         shell: bash

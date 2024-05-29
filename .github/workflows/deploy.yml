@@ -38,16 +38,28 @@ jobs:
         run: chmod +x ./gradlew
         shell: bash
 
+      - name: Retrieve parameters from SSM Parameter Store
+        id: ssm-parameters
+        run: |
+          REDIS_CLOUD_HOST=$(aws ssm get-parameter --name "REDIS_CLOUD_HOST" --with-decryption --query "Parameter.Value" --output text)
+          REDIS_CLOUD_PORT=$(aws ssm get-parameter --name "REDIS_CLOUD_PORT" --with-decryption --query "Parameter.Value" --output text)
+          REDIS_CLOUD_PASSWORD=$(aws ssm get-parameter --name "REDIS_CLOUD_PASSWORD" --with-decryption --query "Parameter.Value" --output text)
+          REDIS_CLOUD_NAME=$(aws ssm get-parameter --name "REDIS_CLOUD_NAME" --with-decryption --query "Parameter.Value" --output text)
+          AWS_RDS_URL=$(aws ssm get-parameter --name "RDS_URL" --with-decryption --query "Parameter.Value" --output text)
+          AWS_RDS_NAME=$(aws ssm get-parameter --name "RDS_NAME" --with-decryption --query "Parameter.Value" --output text)
+          AWS_RDS_PASSWORD=$(aws ssm get-parameter --name "RDS_PASSWORD" --with-decryption --query "Parameter.Value" --output text)
+          echo "REDIS_CLOUD_HOST=${REDIS_CLOUD_HOST}" >> $GITHUB_ENV
+          echo "REDIS_CLOUD_PORT=${REDIS_CLOUD_PORT}" >> $GITHUB_ENV
+          echo "REDIS_CLOUD_PASSWORD=${REDIS_CLOUD_PASSWORD}" >> $GITHUB_ENV
+          echo "REDIS_CLOUD_NAME=${REDIS_CLOUD_NAME}" >> $GITHUB_ENV
+          echo "AWS_RDS_URL=${AWS_RDS_URL}" >> $GITHUB_ENV
+          echo "AWS_RDS_NAME=${AWS_RDS_NAME}" >> $GITHUB_ENV
+          echo "AWS_RDS_PASSWORD=${AWS_RDS_PASSWORD}" >> $GITHUB_ENV
+
       - name: Build with Gradle
         env:
-          REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
-          REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
-          REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
-          REDIS_CLOUD_NAME: ${{ secrets.REDIS_CLOUD_NAME }}
-          AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
-          AWS_RDS_NAME: ${{ secrets.AWS_RDS_NAME }}
-          AWS_RDS_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
         run: ./gradlew build -x test --info
+
         shell: bash
 
       - name: List build/libs directory

@@ -32,8 +32,5 @@ export AWS_RDS_URL
 export AWS_RDS_NAME
 export AWS_RDS_PASSWORD
 
-
-
-
 # Start Spring Boot application
 nohup java -jar /home/ec2-user/pump/build/libs/pumpya-0.0.1-SNAPSHOT.jar >> $APP_LOG 2>> $ERROR_LOG &

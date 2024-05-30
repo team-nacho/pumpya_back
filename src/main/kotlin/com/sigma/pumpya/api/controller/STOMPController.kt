@@ -3,20 +3,23 @@ package com.sigma.pumpya.api.controller
 import com.sigma.pumpya.api.request.CreateNewMemberRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
 import com.sigma.pumpya.application.PartyService
+import com.sigma.pumpya.application.ReceiptService
 import com.sigma.pumpya.application.RedisPublisherService
 import com.sigma.pumpya.infrastructure.enums.Topic
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.stereotype.Controller
-import java.util.*
+import org.springframework.transaction.annotation.Transactional
 
-
+@Tag(name="STOMP api")
 @Controller
 class STOMPController(
     private val partyService: PartyService,
-    private val redisPublisherService: RedisPublisherService
+    private val redisPublisherService: RedisPublisherService,
+    private val receiptService: ReceiptService
 ) {
     @Operation(summary = "create receipt")
     @MessageMapping("/party/{partyId}/create")
@@ -26,15 +29,6 @@ class STOMPController(
     ) {
         val receiptId: String = partyService.saveReceipt(createReceiptRequest)
     }
-    @Operation(summary = "end party")
-    @MessageMapping("/party/{partyId}/end")
-    fun endParty(
-        @DestinationVariable partyId: String,
-    ) {
-        partyService.endParty(partyId)
-        redisPublisherService.publishPartyMessage(partyId, Topic.PARTY_ENDED.name)
-    }
-
     /**
     * TODO
     *  영수증 삭제
@@ -43,12 +37,13 @@ class STOMPController(
     * */
     @Operation(summary = "delete receipt")
     @MessageMapping("/party/{partyId}/delete")
+    @Transactional
     fun deleteReceipt(
         @DestinationVariable partyId: String,
         @Valid receiptId: String
     ) {
         //db에서 삭제 후 레디스에 없데이트
-        partyService.deleteReceipt(receiptId);
+        receiptService.deleteReceipt(receiptId);
         redisPublisherService.publishReceiptMessage(partyId, Topic.RECEIPT_DELETED.name, "")
     }
     @Operation(summary = "create member")
@@ -61,5 +56,14 @@ class STOMPController(
         val memberKey = partyService.createMember(request.name)
         partyService.addNewMemberInParty(partyKey, memberKey)
         redisPublisherService.publishMemberMessage(partyId, Topic.MEMBER_REGISTERED.name, request.name)
+    }
+
+    @Operation(summary = "end party")
+    @MessageMapping("/party/{partyId}/end")
+    fun endParty(
+        @DestinationVariable partyId: String,
+    ) {
+        partyService.endParty(partyId)
+        redisPublisherService.publishPartyMessage(partyId, Topic.PARTY_ENDED.name)
     }
 }

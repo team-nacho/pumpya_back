@@ -1,0 +1,31 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_CLOUD_HOST}
+      port: ${REDIS_CLOUD_PORT}
+      password: ${REDIS_CLOUD_PASSWORD}
+      name: ${REDIS_CLOUD_NAME}
+      repositories:
+        enabled: false
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${AWS_RDS_URL}
+    username: ${AWS_RDS_NAME}
+    password: ${AWS_RDS_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        show_sql: true
+springdoc:
+  packages-to-scan: com.sigma.pumpya
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /api-docs
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha

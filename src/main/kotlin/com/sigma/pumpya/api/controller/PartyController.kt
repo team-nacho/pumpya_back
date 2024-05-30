@@ -7,13 +7,9 @@ import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
 import com.sigma.pumpya.application.PartyService
-import com.sigma.pumpya.domain.entity.Receipt
-import com.sigma.pumpya.infrastructure.dto.PartyDTO
-import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -53,20 +49,6 @@ class PartyController(
         else return result
     }
 
-    /**TODO
-     * response로 변환하고 변환
-     *
-     *
-     */
-
-     //TODO
-    @GetMapping("/get-receipts/{partyId}")
-    fun getReceiptsWithPartyId(
-         @PathVariable partyId: String
-    ): List<ReceiptDTO> {
-        return partyService.getReceiptsByPartyId(partyId)
-    }
-
     @Operation(summary = "get members")
     @PostMapping("/get-members")
     fun getMembersWithPartyId(
@@ -76,9 +58,7 @@ class PartyController(
         if(result.members.isEmpty()) { return GetMembersResponse(emptyList()) }
         return result
     }
-    /**TODO
-        파티 정보 가져오기
-     */
+
     @Operation(summary = "get party with party Id")
     @GetMapping("/get-party/{partyId}")
     fun getPartyWithPartyId(

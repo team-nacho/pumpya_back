@@ -19,9 +19,6 @@ import java.util.*
 @Service
 class PartyService(
     private val partyRepository: PartyRepository,
-    private val receiptRepository: ReceiptRepository,
-    private val currencyRepository: CurrencyRepository,
-    private val tagRepository: TagRepository,
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
@@ -88,9 +85,7 @@ class PartyService(
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
 
-    fun getReceiptsByPartyId(partyId : String): List<ReceiptDTO> {
-        return findAllByPartyId(partyId)
-    }
+
 
     /**TODO
      * 영수증을 받아온 후 DB에 저장, 총 금액 업데이트
@@ -134,43 +129,7 @@ class PartyService(
         return receiptId
     }
 
-    fun deleteReceipt(receiptId: String) : String{
-        //DB에서 삭제
-        //TODO 만약 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
-        val receipt = receiptRepository.findById(receiptId)
-        if (receipt.isPresent) {
-            val partyId = receipt.get().partyId
-            val useCurrency = receipt.get().useCurrency
 
-            // 해당 통화에 대한 다른 영수증이 있는지 확인
-            val otherReceipts = findAllByUseCurrency(useCurrency)
-            if (otherReceipts.isEmpty()) {
-                // 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
-                val partyObject = partyRepository.findById(partyId)
-                val useCurrencies = partyObject.get().usedCurrencies
-
-                if( useCurrencies.contains(useCurrency) ) {
-                    val currencyList = useCurrencies.split(",").filter { currencyPair ->
-                        val (currency, _) = currencyPair.split(":")
-                        currency != useCurrency
-                    }.joinToString(",")
-
-                    val updatedParty = Party(
-                        partyId = partyObject.get().partyId,
-                        partyName = partyObject.get().partyName,
-                        totalCost = partyObject.get().totalCost,
-                        usedCurrencies = currencyList
-                    )
-                    partyRepository.save(updatedParty)
-                }
-            }
-            // 영수증 삭제
-            receiptRepository.deleteById(receiptId)
-            return "success"
-        } else {
-            return "fail"
-        }
-    }
 
     fun endParty(partyId: String) {
         val partyKey: String = "party:$partyId"
@@ -194,7 +153,7 @@ class PartyService(
     }
 
     fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
-        val receiptList: List<ReceiptDTO> = findAllByPartyId(partyId)
+        val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
 
         val mappingTable: MutableMap<String, Int> = mutableMapOf()
@@ -254,27 +213,5 @@ class PartyService(
         return receiptResult
     }
 
-    fun findAllByPartyId(partyId: String): List<ReceiptDTO> {
-        val receiptList = receiptRepository.findAll()
-        val result = mutableListOf<ReceiptDTO>()
-        for(receipt in receiptList) {
-            if(receipt.partyId == partyId) {
-                result.add(receipt.toDTO())
-            }
-        }
-        if(receiptList.isEmpty()) return mutableListOf<ReceiptDTO>() //Error Emerge
-        return result
-    }
 
-    fun findAllByUseCurrency(useCurrency: String) : List<ReceiptDTO>{
-        val receiptList = receiptRepository.findAll()
-        val result = mutableListOf<ReceiptDTO>()
-        for(receipt in receiptList) {
-            if(receipt.useCurrency == useCurrency) {
-                result.add(receipt.toDTO())
-            }
-        }
-        if(receiptList.isEmpty()) return mutableListOf<ReceiptDTO>() //Error Emerge
-        return result
-    }
 }

@@ -35,7 +35,14 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-	runtimeOnly("com.h2database:h2")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+
+	//test
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+	testImplementation("org.testcontainers:mariadb")
+
+	//운영 DB
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -44,7 +51,8 @@ dependencies {
 	testImplementation("io.kotest:kotest-runner-junit5:5.3.2")
 	testImplementation("io.kotest:kotest-property:5.3.2")
 	testImplementation("io.mockk:mockk:1.13.10")
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+
+
 }
 
 tasks.withType<KotlinCompile> {

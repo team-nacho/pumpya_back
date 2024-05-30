@@ -46,6 +46,10 @@ jobs:
         run: ls -l scripts
         shell: bash
 
+      - name: Make zip file
+        run: zip -r $GITHUB_SHA.zip build/libs/*.jar scripts/*.sh appspec.yml
+        shell: bash
+
       - name: List contents of zip file
         run: unzip -l $GITHUB_SHA.zip
         shell: bash

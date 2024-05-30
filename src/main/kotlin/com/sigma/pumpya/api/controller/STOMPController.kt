@@ -12,6 +12,7 @@ import jakarta.validation.Valid
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.stereotype.Controller
+import org.springframework.transaction.annotation.Transactional
 
 @Tag(name="STOMP api")
 @Controller
@@ -36,6 +37,7 @@ class STOMPController(
     * */
     @Operation(summary = "delete receipt")
     @MessageMapping("/party/{partyId}/delete")
+    @Transactional
     fun deleteReceipt(
         @DestinationVariable partyId: String,
         @Valid receiptId: String

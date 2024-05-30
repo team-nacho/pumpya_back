@@ -9,6 +9,7 @@ import com.sigma.pumpya.infrastructure.repository.TagRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,12 +23,13 @@ class TagController(
 ) {
     @Operation(summary = "get tag list")
     @GetMapping("/get-tags")
+    @Transactional
     fun getAllTags(): GetTagsResponse {
         val tagList = tagRepository.findAll() ?: emptyList();
-        var response: List<String> = listOf()
+        var response: MutableList<String> = mutableListOf()
         if(tagList.isNotEmpty()) {
             for(tag in tagList) {
-                response.addLast(tag.tagName)
+                response.add(tag.tagName)
             }
         }
 
@@ -36,6 +38,7 @@ class TagController(
 
     @Operation(summary = "create tag with tag name")
     @PostMapping("/create-tag")
+    @Transactional
     fun createTag(
         @Valid @RequestBody createTagRequest: CreateTagRequest
     ): CreateTagResponse {
@@ -45,12 +48,17 @@ class TagController(
         return CreateTagResponse(res.tagName)
     }
 
+    /**
+     *
+     * TODO
+     *  여기도 반환을 뭘 해줘야 하는지 모름
+     */
     @Operation(summary = "delete tag with tag name")
     @PostMapping("/delete-tag/{tag}")
+    @Transactional
     fun deleteTag(
         @Valid @PathVariable tag: String
-    ): DeleteTagResponse {
-        val res =  tagRepository.deleteTagByTagName(tag)
-        return DeleteTagResponse(res)
+    ) {
+        return tagRepository.deleteTagByTagName(tag)
     }
 }

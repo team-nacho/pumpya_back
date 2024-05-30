@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface TagRepository : JpaRepository<Tags, String> {
-    fun deleteTagByTagName(tagName: String): Tags
+    fun deleteTagByTagName(tagName: String)
 }

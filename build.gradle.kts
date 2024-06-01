@@ -14,7 +14,6 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
-	archivesName="pump.jar"
 }
 
 
@@ -69,4 +68,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+	archiveBaseName.set("pump")
+	archiveVersion.set("") // 버전 번호를 제거
+	archiveClassifier.set("") // 분류자를 제거
+}
+tasks.named<Jar>("jar") {
+	enabled = false // 기본 jar task를 비활성화
 }

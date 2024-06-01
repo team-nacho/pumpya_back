@@ -36,6 +36,7 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	//test
 	testImplementation("org.testcontainers:junit-jupiter")
@@ -52,7 +53,8 @@ dependencies {
 	testImplementation("io.kotest:kotest-property:5.3.2")
 	testImplementation("io.mockk:mockk:1.13.10")
 
-
+	//h2
+	runtimeOnly("com.h2database:h2")
 }
 
 tasks.withType<KotlinCompile> {

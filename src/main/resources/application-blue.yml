@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: blue
   data:
     redis:
       host: ${REDIS_CLOUD_HOST}
@@ -29,3 +32,5 @@ springdoc:
     disable-swagger-default-url: true
     display-request-duration: true
     operations-sorter: alpha
+server:
+  port: 8081

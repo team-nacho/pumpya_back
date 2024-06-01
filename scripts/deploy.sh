@@ -11,7 +11,7 @@ DEPLOY_PATH=$BASE_PATH/jar/
 cp $BUILD_PATH $DEPLOY_PATH
 
 echo "> 권한 수정"
-$BASE_PATH/scripts/change-script-permissions.sh
+chmod +x /home/ec2-user/pump/scripts/*
 
 echo "> 현재 구동중인 port 확인"
 CURRENT_PROFILE=$(curl -s http://localhost/Z2V0LXByb2ZpbGU)

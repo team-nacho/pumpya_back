@@ -28,7 +28,7 @@ then
 else
   echo "> No Profile. Profile: $CURRENT_PROFILE"
   echo "> set profile to blue | IDLE_PROFILE: blue"
-  export IDLE_PROFILE=green
+  export IDLE_PROFILE=blue
   IDLE_PORT=8081
 fi
 

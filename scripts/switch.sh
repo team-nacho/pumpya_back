@@ -4,10 +4,10 @@ echo "> 현재 구동중인 Port 확인"
 CURRENT_PROFILE=$(curl -s http://localhost/Z2V0LXByb2ZpbGU)
 
 # 쉬고 있는 set 찾기: set1이 사용중이면 set2가 쉬고 있고, 반대면 set1이 쉬고 있음
-if [ $CURRENT_PROFILE == blue ]
+if [ "$CURRENT_PROFILE" == "blue" ]
 then
   IDLE_PORT=8082
-elif [ $CURRENT_PROFILE == green ]
+elif [ "$CURRENT_PROFILE" == "green" ]
 then
   IDLE_PORT=8081
 else

@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: green
   data:
     redis:
       host: ${REDIS_CLOUD_HOST}
@@ -29,3 +32,11 @@ springdoc:
     disable-swagger-default-url: true
     display-request-duration: true
     operations-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+server:
+  port: 8082

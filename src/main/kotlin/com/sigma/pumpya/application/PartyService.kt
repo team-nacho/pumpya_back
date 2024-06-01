@@ -22,7 +22,7 @@ class PartyService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
-    private val receiptService: ReceiptService
+    private val receiptService: ReceiptService,
 ) {
 
     fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
@@ -146,8 +146,8 @@ class PartyService(
         redisTemplate.opsForSet().remove("parties", partyKey)
 
         /**TODO
-         * Com?
-         * 레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
+         *  Com?
+         *  레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
          */
         pumppaya(partyId);
     }

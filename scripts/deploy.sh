@@ -1,9 +1,5 @@
 #!/bin/bash
 
-
-
-
-
 BASE_PATH=/home/ec2-user/pump
 BUILD_PATH=$(ls $BASE_PATH/build/libs/*.jar)
 JAR_NAME=$(basename $BUILD_PATH)

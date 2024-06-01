@@ -6,6 +6,7 @@ import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.stereotype.Service
 import java.util.*
 @Service
@@ -35,7 +36,10 @@ class ReceiptService (
     }
 
     fun getReceiptsByPartyId(partyId : String): List<ReceiptDTO> {
-        return findAllByPartyId(partyId)
+        val party = partyRepository.findByPartyId(partyId)
+        if(party == null) {
+            throw NotFoundException()
+        } else return findAllByPartyId(partyId)
     }
     fun deleteReceipt(receiptId: String) : String{
         //DB에서 삭제

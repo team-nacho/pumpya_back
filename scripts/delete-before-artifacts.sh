@@ -9,6 +9,7 @@ if [ -n "$PID" ]; then
 
   if ps -p $PID > /dev/null; then
     kill -9 $PID
+  fi
 fi
 
 # Remove the old artifact

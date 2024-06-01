@@ -19,22 +19,22 @@ CURRENT_PROFILE=$(curl -s http://localhost/Z2V0LXByb2ZpbGU)
 # 사용되고 있지 않은 진영 찾기
 if [ "$CURRENT_PROFILE" == "green" ]
 then
-  IDLE_PROFILE=blue
+  export IDLE_PROFILE=blue
   IDLE_PORT=8081
 elif [ "$CURRENT_PROFILE" == "blue" ]
 then
-  IDLE_PROFILE=green
+  export IDLE_PROFILE=green
   IDLE_PORT=8082
 else
   echo "> No Profile. Profile: $CURRENT_PROFILE"
-  echo "> set profile to green | IDLE_PROFILE: green"
-  IDLE_PROFILE=green
-  IDLE_PORT=8082
+  echo "> set profile to blue | IDLE_PROFILE: blue"
+  export IDLE_PROFILE=green
+  IDLE_PORT=8081
 fi
 
 # 진영 교체
 IDLE_APPLICATION=$IDLE_PROFILE-pump.jar
-IDLE_APPLICATION_PATH=$DEPLOY_PATH$IDLE_APPLICATION
+export IDLE_APPLICATION_PATH=$DEPLOY_PATH$IDLE_APPLICATION
 
 ln -Tfs $DEPLOY_PATH$JAR_NAME $IDLE_APPLICATION_PATH
 

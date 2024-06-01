@@ -1,10 +1,12 @@
 package com.sigma.pumpya.domain.entity
 
+import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import java.time.LocalDateTime
-import java.util.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+
 @Entity(name = "receipt")
 class Receipt(
     @Id
@@ -21,6 +23,20 @@ class Receipt(
     val useCurrency: String,
     @Column(name = "use_tag")
     val useTag: String,
-    @Column(name = "join")
+    @Column(name = "joins")
     val joins: String //Serialize members list
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+    fun toDTO(): ReceiptDTO {
+        return ReceiptDTO(
+            this.receiptId,
+            this.partyId,
+            this.author,
+            this.receiptName,
+            this.cost,
+            this.useCurrency,
+            this.useTag,
+            this.joins,
+            this.createdAt!!.toLong()
+        )
+    }
+}

@@ -1,9 +1,5 @@
 package com.sigma.pumpya.infrastructure.dto
 
-import com.sigma.pumpya.domain.entity.Currency
-import com.sigma.pumpya.domain.entity.Tag
-import java.util.*
-
 data class ReceiptDTO(
     val receiptId : String,
     val partyId: String,
@@ -13,5 +9,5 @@ data class ReceiptDTO(
     val useCurrency: String,
     val useTag : String,
     val joins: String,
-    val createdAt: Date,
+    val createdAt: Long,
 )

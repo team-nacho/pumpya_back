@@ -7,9 +7,6 @@ import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
 import com.sigma.pumpya.application.PartyService
-import com.sigma.pumpya.domain.entity.Receipt
-import com.sigma.pumpya.infrastructure.dto.PartyDTO
-import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -43,35 +40,25 @@ class PartyController(
      * Com?
      * 파티 아이디로 정산 결과 가져오기
      */
+    //TODO
     @Operation(summary = "Get Pumppay Result")
-    @GetMapping("/get-pumppay-result")
-    fun getDutchResultWithPartyId(partyId : String) : Map<String, Map<String, Array<Array<Double>>>>  {
-        return partyService.pumppaya(partyId)
-    }
-
-    /**TODO
-     * response로 변환하고 변환
-     *
-     *
-     */
-     
-    @GetMapping("/get-receipts/{partyId}")
-    fun getReceiptsWithPartyId(
-         @PathVariable partyId: String
-    ): List<ReceiptDTO> {
-        return partyService.getReceiptsByPartyId(partyId)
+    @GetMapping("/get-pumppay-result/{partyId}")
+    fun getDutchResultWithPartyId(@PathVariable partyId : String) : Map<String, Map<String, Map<String, Double>>> {
+        val result = partyService.pumppaya(partyId)
+        if (result.isEmpty())  return emptyMap()
+        else return result
     }
 
     @Operation(summary = "get members")
     @PostMapping("/get-members")
     fun getMembersWithPartyId(
-        @Valid getMemberRequest: GetMembersRequest
+        @Valid @RequestBody getMemberRequest: GetMembersRequest
     ): GetMembersResponse {
-        return GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
+        val result = GetMembersResponse(partyService.getMembersWithPartyId(getMemberRequest.partyId))
+        if(result.members.isEmpty()) { return GetMembersResponse(emptyList()) }
+        return result
     }
-    /**TODO
-        파티 정보 가져오기
-     */
+
     @Operation(summary = "get party with party Id")
     @GetMapping("/get-party/{partyId}")
     fun getPartyWithPartyId(

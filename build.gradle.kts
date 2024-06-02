@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -14,6 +15,7 @@ version = "0.0.1-SNAPSHOT"
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
 }
+
 
 repositories {
 	mavenCentral()
@@ -36,6 +38,7 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	//test
 	testImplementation("org.testcontainers:junit-jupiter")
@@ -52,7 +55,8 @@ dependencies {
 	testImplementation("io.kotest:kotest-property:5.3.2")
 	testImplementation("io.mockk:mockk:1.13.10")
 
-
+	//h2
+	runtimeOnly("com.h2database:h2")
 }
 
 tasks.withType<KotlinCompile> {
@@ -64,4 +68,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+	archiveBaseName.set("pump")
+	archiveVersion.set("") // 버전 번호를 제거
+	archiveClassifier.set("") // 분류자를 제거
+}
+tasks.named<Jar>("jar") {
+	enabled = false // 기본 jar task를 비활성화
 }

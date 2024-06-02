@@ -9,14 +9,9 @@ permissions:
 files:
   - source: /
     destination: /home/ec2-user/pump
+    overwrite: yes
 
 hooks:
-  BeforeInstall:
-    - location: scripts/delete-before-artifacts.sh
-      timeout: 300
   AfterInstall:
-    - location: scripts/change-script-permissions.sh
-      timeout: 300
-  ApplicationStart:
-    - location: scripts/run-application.sh
-      timeout: 300
+    - location: scripts/execute-deploy.sh
+      timeout: 180

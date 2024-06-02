@@ -8,10 +8,10 @@ import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
-import com.sigma.pumpya.infrastructure.repository.CurrencyRepository
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
-import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
-import com.sigma.pumpya.infrastructure.repository.TagRepository
+import com.sigma.pumpya.infrastructure.util.ListParser
+import jakarta.validation.constraints.Null
+import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
@@ -22,12 +22,13 @@ class PartyService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
-    private val receiptService: ReceiptService
+    private val receiptService: ReceiptService,
+    private val listParser: ListParser
 ) {
-
     fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
-        var partyId = UUID.randomUUID().toString()
-        val partyName: String = "test party name"
+        val partyId = UUID.randomUUID().toString()
+        val name = listParser.randomNameCreator()
+        val partyName: String = if (name.isNotEmpty()) name else "TempPartyName"
         //Party DTO
         val partyAttributes = Party(
             partyId,
@@ -176,22 +177,7 @@ class PartyService(
             }
         }
 
-        // 금액 계산
-//        for (receipt in receiptList) {
-//            val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
-//            val cost = receipt.cost / members
-//            val currency = receipt.useCurrency
-//            if (!receiptResult.containsKey(currency)) {
-//                receiptResult[currency] = mutableMapOf()
-//            }
-//
-//            for ((member, index) in mappingTable) {
-//                if (!receiptResult[currency]!!.containsKey(member)) {
-//                    receiptResult[currency]!![member] = mutableMapOf()
-//                }
-//                receiptResult[currency]!![member]!![receipt.author] = (receiptResult[currency]!![member]!![receipt.author] ?: 0.0) + cost
-//            }
-//        }
+        //금액계산
         for (receipt in receiptList) {
             val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
             val cost = receipt.cost / members
@@ -212,6 +198,4 @@ class PartyService(
 
         return receiptResult
     }
-
-
 }

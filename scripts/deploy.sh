@@ -1,11 +1,5 @@
 #!/bin/bash
 
-BASE_PATH=/home/ec2-user/pump
-BUILD_PATH=$(ls $BASE_PATH/build/libs/*.jar)
-JAR_NAME=$(basename $BUILD_PATH)
-
-echo "> build 파일명: $JAR_NAME"
-
 echo "> build 파일 복사"
 DEPLOY_PATH=$BASE_PATH/jar/
 cp $BUILD_PATH $DEPLOY_PATH

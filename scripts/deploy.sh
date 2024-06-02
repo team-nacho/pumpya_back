@@ -10,10 +10,6 @@ echo "> build 파일 복사"
 DEPLOY_PATH=$BASE_PATH/jar/
 cp $BUILD_PATH $DEPLOY_PATH
 
-echo "> 권한 수정"
-sudo chmod +x /home/ec2-user/pump/scripts/run-application.sh
-
-
 echo "> 현재 구동중인 port 확인"
 CURRENT_PROFILE=$(curl -s http://localhost/Z2V0LXByb2ZpbGU)
 
@@ -85,6 +81,4 @@ done
 
 echo "> 스위칭"
 sleep 10
-
-sudo chmod +x /home/ec2-user/pump/scripts/switch.sh
 $BASE_PATH/scripts/switch.sh

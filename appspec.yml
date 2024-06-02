@@ -13,5 +13,8 @@ files:
 
 hooks:
   AfterInstall:
+    - location: scripts/change-script-permissions.sh
+      timeout: 180
+  ApplicationStart:
     - location: scripts/execute-deploy.sh
       timeout: 180

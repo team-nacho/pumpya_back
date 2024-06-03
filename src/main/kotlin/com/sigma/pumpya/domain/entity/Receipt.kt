@@ -10,21 +10,30 @@ import org.springframework.http.ResponseEntity
 @Entity(name = "receipt")
 class Receipt(
     @Id
+    @Column(name = "receipt_id")
     val receiptId : String,
+
     @Column(name = "party_id")
     val partyId: String,
+
     @Column(name = "author")
     val author : String,
+
     @Column(name = "receipt_name")
     val receiptName: String, //cost use description
+
     @Column(name = "cost")
     val cost : Double,
+
     @Column(name = "use_currency")
     val useCurrency: String,
+
     @Column(name = "use_tag")
     val useTag: String,
+
     @Column(name = "joins")
     val joins: String //Serialize members list
+    
 ) : BaseTimeEntity() {
     fun toDTO(): ReceiptDTO {
         return ReceiptDTO(

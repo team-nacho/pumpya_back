@@ -6,8 +6,10 @@ import jakarta.persistence.Id
 
 @Entity(name = "currency")
 class Currency (
-    @field: Id
+    @Id
+    @Column(name = "currency_id")
     val currencyId : String, //currency Symbol
+
     @Column(name = "country_name")
     val country : String //Currency Origin
 )

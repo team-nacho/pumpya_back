@@ -57,6 +57,7 @@ dependencies {
 
 	//h2
 	runtimeOnly("com.h2database:h2")
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.withType<KotlinCompile> {

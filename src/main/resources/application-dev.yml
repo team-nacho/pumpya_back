@@ -23,5 +23,10 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         show_sql: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
 server:
   port: 8080

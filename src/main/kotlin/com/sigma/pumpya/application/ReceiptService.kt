@@ -61,7 +61,6 @@ class ReceiptService (
                     val updatedParty = Party(
                         partyId = partyObject.get().partyId,
                         partyName = partyObject.get().partyName,
-                        totalCost = partyObject.get().totalCost,
                         usedCurrencies = currencyList
                     )
                     partyRepository.save(updatedParty)

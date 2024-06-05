@@ -35,7 +35,6 @@ class PartyService(
         val partyAttributes = Party(
             partyId,
             partyName,
-            totalCost = 0.0,
             usedCurrencies = ""
         )
 
@@ -75,7 +74,7 @@ class PartyService(
     fun getMembersWithPartyId(partyId: String): List<String> {
         val partyMembersKey = "party:$partyId:members"
         val memberSet: Set<String> = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
-        var memberList: MutableList<String> = mutableListOf()
+        val memberList: MutableList<String> = mutableListOf()
 
         for(memberId in memberSet) {
             val name = redisTemplate.opsForHash<String, String>().entries(memberId)["name"]!!

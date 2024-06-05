@@ -11,33 +11,31 @@ import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.collections.ArrayList
+
 @Service
 class ReceiptService (
     private val receiptRepository: ReceiptRepository,
-    private val partyRepository: PartyRepository,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
     private val redisTemplate: RedisTemplate<String, String>,
 ){
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
-        // CreateReceiptRequest에서 받은 정보를 Receipt 엔티티 객체로 변환
         val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "party:${createReceiptRequest.partyId}"
+        val partyKey: String = "$createReceiptRequest.partyId"
 
         val newReceipt = Receipt(
             receiptId,
-            partyKey,
+            createReceiptRequest.partyId,
             createReceiptRequest.author,
             createReceiptRequest.receiptName,
             createReceiptRequest.cost,
             objectMapper.writeValueAsString(createReceiptRequest.joins),
             createReceiptRequest.useCurrency,
             createReceiptRequest.useTag,
-        )// BaseEntity의 @CreatedDate와 @LastModifiedDate는 자동으로 처리되므로 여기서 직접 설정할 필요는 없음
+        )
 
-
-        // JPA 리포지토리를 사용해 데이터베이스에 저장
-        receiptRepository.save(newReceipt)
+        val res = receiptRepository.save(newReceipt)
 
         val partyInfo = redisTemplate.opsForHash<String, String>().entries(partyKey)
 
@@ -53,7 +51,7 @@ class ReceiptService (
 
 
         redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
-        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(newReceipt) )
+        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(res) )
 
         return receiptId
     }
@@ -68,28 +66,19 @@ class ReceiptService (
         if (receipt.isPresent) {
             val partyId = receipt.get().partyId
             val useCurrency = receipt.get().useCurrency
-
+            val partyKey = "party:$partyId"
             // 해당 통화에 대한 다른 영수증이 있는지 확인
             val otherReceipts = findAllByUseCurrency(useCurrency)
             if (otherReceipts.isEmpty()) {
-                // 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
-                val partyObject = partyRepository.findById(partyId)
-                val useCurrencies = partyObject.get().usedCurrencies
+                // 해당 파티에서 통화 목록 가져오기
+                val partyInfo = redisTemplate.opsForHash<String, String>().entries(partyKey)
+                val useCurrencies = objectMapper.readValue(partyInfo["usedCurrencies"], Array<String>::class.java)
+                val newCurrencyList:Array<String> = arrayOf<String>()
 
-                if( useCurrencies.contains(useCurrency) ) {
-                    val currencyList = useCurrencies.split(",").filter { currencyPair ->
-                        val (currency, _) = currencyPair.split(":")
-                        currency != useCurrency
-                    }.joinToString(",")
+                useCurrencies.forEach { it ->   if(it != useCurrency) { newCurrencyList + it } }
+                val currencyListToString = objectMapper.writeValueAsString(newCurrencyList.distinct())
 
-                    val updatedParty = Party(
-                        partyId = partyObject.get().partyId,
-                        partyName = partyObject.get().partyName,
-                        totalCost = partyObject.get().totalCost,
-                        usedCurrencies = currencyList
-                    )
-                    partyRepository.save(updatedParty)
-                }
+                redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
             }
             // 영수증 삭제
             receiptRepository.deleteById(receiptId)

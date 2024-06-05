@@ -2,18 +2,13 @@ package com.sigma.pumpya.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
-import com.sigma.pumpya.api.request.CreateReceiptRequest
 import com.sigma.pumpya.api.request.GetPumppayaResultRequest
+import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
-import com.sigma.pumpya.domain.entity.Receipt
-import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
-import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.util.ListParser
-import jakarta.validation.constraints.Null
-import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
@@ -23,9 +18,10 @@ class PartyService(
     private val partyRepository: PartyRepository,
     private val redisTemplate: RedisTemplate<String, String>,
     private val receiptService: ReceiptService,
-    private val listParser: ListParser
+    private val listParser: ListParser,
+    private val objectMapper: ObjectMapper,
 ) {
-    fun createParty(createPartyRequest: CreatePartyRequest): PartyDTO {
+    fun createParty(createPartyRequest: CreatePartyRequest): CreatePartyResponse {
         val partyId = UUID.randomUUID().toString()
         val name = listParser.randomNameCreator()
         val partyName: String = if (name.isNotEmpty()) name else "TempPartyName"
@@ -33,8 +29,6 @@ class PartyService(
         val partyAttributes = Party(
             partyId,
             partyName,
-            totalCost = 0.0,
-            usedCurrencies = ""
         )
 
         val partyKey: String = "party:$partyId"
@@ -47,11 +41,15 @@ class PartyService(
 
         val memberKey = createMember(createPartyRequest.userName);
         addNewMemberInParty(partyKey, memberKey)
-
+        val partyInfo = getPartyInfo(partyKey)
         //JPA
         partyRepository.save(partyAttributes)
 
-        return partyAttributes.toDTO()
+        return CreatePartyResponse(
+            partyAttributes.partyId,
+            partyAttributes.partyName,
+            objectMapper.readValue(partyInfo["usedCurrencies"], Array<String>::class.java)
+        )
     }
 
     fun createMember(memberName: String): String {

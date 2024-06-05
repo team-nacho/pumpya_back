@@ -2,8 +2,8 @@ package com.sigma.pumpya.api.controller
 
 import com.sigma.pumpya.api.request.CreateCurrencyRequest
 import com.sigma.pumpya.api.response.CreateCurrencyResponse
+import com.sigma.pumpya.api.response.GetCurrencyLIst
 import com.sigma.pumpya.application.CurrencyService
-import com.sigma.pumpya.application.GetCurrencyLIst
 import com.sigma.pumpya.domain.entity.Currency
 import com.sigma.pumpya.infrastructure.repository.CurrencyRepository
 import io.swagger.v3.oas.annotations.Operation
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Currency Api")
 @RestController("/currency")
 class CurrencyController (
-    private val currencyRepository: CurrencyRepository
+    private val currencyService: CurrencyService
 ){
     @Operation(summary = "create currency")
     @PostMapping("/create-currency")
@@ -27,18 +27,15 @@ class CurrencyController (
     fun createCurrency(
         @Valid @RequestBody createCurrencyRequest: CreateCurrencyRequest
     ): CreateCurrencyResponse {
-        val res =
-            currencyRepository.save(
-                Currency(createCurrencyRequest.currencyId, createCurrencyRequest.currencyName)
-            )
+        val res = currencyService.createCurrency(createCurrencyRequest)
         return CreateCurrencyResponse(res.currencyId, res.country)
     }
 
     @Operation(summary = "get currency list")
     @GetMapping("/get-currencies")
     @Transactional
-    fun getCurrencies():  GetCurrencyLIst {
-        val res = currencyRepository.findAll() ?: emptyList()
+    fun getCurrencies(): GetCurrencyLIst {
+        val res = currencyService.getCurrencies()
         return GetCurrencyLIst(res)
     }
 
@@ -52,7 +49,7 @@ class CurrencyController (
     fun deleteCurrencies(
         @PathVariable currencyId: String
     ) {
-        return currencyRepository.deleteById(currencyId)
+        return currencyService.deleteCurrency(currencyId)
     }
 
 }

@@ -6,7 +6,6 @@ import java.util.*
 data class CreatePartyResponse(
     val partyId: String,
     val partyName: String,
-    val totalCost: Double,
     val usedCurrencies: Array<String>,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -17,7 +16,6 @@ data class CreatePartyResponse(
 
         if (partyId != other.partyId) return false
         if (partyName != other.partyName) return false
-        if (totalCost != other.totalCost) return false
         if (!usedCurrencies.contentEquals(other.usedCurrencies)) return false
 
         return true
@@ -26,7 +24,6 @@ data class CreatePartyResponse(
     override fun hashCode(): Int {
         var result = partyId.hashCode()
         result = 31 * result + partyName.hashCode()
-        result = 31 * result + totalCost.hashCode()
         result = 31 * result + usedCurrencies.contentHashCode()
         return result
     }

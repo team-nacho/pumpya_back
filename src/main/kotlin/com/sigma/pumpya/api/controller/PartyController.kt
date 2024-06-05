@@ -21,22 +21,14 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "party Api")
 @RestController("/party")
 class PartyController(
-    private val partyService: PartyService
+    private val partyService: PartyService,
 ) {
     @Operation(summary = "Create Party")
     @PostMapping("/create-party")
     fun createParty(
         @Valid @RequestBody createPartyRequest: CreatePartyRequest
     ): CreatePartyResponse {
-        val createPartyResult = partyService.createParty(createPartyRequest)
-
-        return CreatePartyResponse(
-            createPartyResult.partyId,
-            createPartyResult.partyName,
-            createPartyResult.totalCost,
-            createPartyResult.usedCurrencies
-
-        )
+        return partyService.createParty(createPartyRequest)
     }
     /**TODO
      * Com?

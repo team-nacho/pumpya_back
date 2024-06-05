@@ -3,6 +3,8 @@ package com.sigma.pumpya.application
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
+import com.sigma.pumpya.api.request.GetPumppayaResultRequest
+import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
@@ -103,6 +105,12 @@ class PartyService(
         pumppaya(partyId);
     }
 
+    fun PumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
+        val input = pumppaya(getPumppayaResultRequest.partyId)
+        return GetPumppayaResultResponse(input)
+    }
+
+
     fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
         val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
@@ -142,6 +150,19 @@ class PartyService(
                     receiptResult[currency]!![member]
                         ?.getOrPut(receipt.author) { 0.0 }
                         ?.plus(cost)
+                }
+            }
+        }
+
+        // 금액 전송 정보 계산
+        val transferInfo: MutableMap<String, MutableMap<String, Double>> = mutableMapOf()
+        for (currency in receiptResult.keys) {
+            for (sender in receiptResult[currency]!!.keys) {
+                for (receiver in receiptResult[currency]!![sender]!!.keys) {
+                    val amount = receiptResult[currency]!![sender]!![receiver] ?: 0.0
+                    if (amount > 0) {
+                        transferInfo.getOrPut(sender) { mutableMapOf() }[receiver] = amount
+                    }
                 }
             }
         }

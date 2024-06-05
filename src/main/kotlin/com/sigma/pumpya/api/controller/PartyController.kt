@@ -3,9 +3,11 @@ package com.sigma.pumpya.api.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetMembersRequest
+import com.sigma.pumpya.api.request.GetPumppayaResultRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetMembersResponse
 import com.sigma.pumpya.api.response.GetPartyResponse
+import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.application.PartyService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -43,10 +45,9 @@ class PartyController(
     //TODO
     @Operation(summary = "Get Pumppay Result")
     @GetMapping("/get-pumppay-result/{partyId}")
-    fun getDutchResultWithPartyId(@PathVariable partyId : String) : Map<String, Map<String, Map<String, Double>>> {
-        val result = partyService.pumppaya(partyId)
-        if (result.isEmpty())  return emptyMap()
-        else return result
+    fun getDutchResultWithPartyId(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
+        val result = partyService.PumppayaResult(getPumppayaResultRequest)
+        return result
     }
 
     @Operation(summary = "get members")

@@ -86,52 +86,6 @@ class PartyService(
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
 
-
-
-    /**TODO
-     * 영수증을 받아온 후 DB에 저장, 총 금액 업데이트
-     * id를 받아와서 redis에게 전송
-     *
-     */
-    fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
-        val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "party:${createReceiptRequest.partyId}"
-
-        val newReceipt = Receipt(
-            receiptId,
-            partyKey,
-            createReceiptRequest.author,
-            createReceiptRequest.receiptName,
-            createReceiptRequest.cost,
-            objectMapper.writeValueAsString(createReceiptRequest.joins),
-            createReceiptRequest.useCurrency,
-            createReceiptRequest.useTag,
-          )
-
-        //receipt save in DB
-        receiptService.saveReceipt(createReceiptRequest)
-        //get party info. if not exist currency, add
-        val partyInfo = getPartyInfo(partyKey)
-
-        val currencyList = try {
-            objectMapper
-                .readValue<Array<String>>(partyInfo["usedCurrencies"].toString(), Array<String>::class.java).toMutableList()
-        } catch (e: Exception) {
-            mutableListOf()
-        }
-        
-        currencyList.add(createReceiptRequest.useCurrency)
-        val currencyListToString = objectMapper.writeValueAsString(currencyList.distinct())
-
-
-        redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
-        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(newReceipt) )
-
-        return receiptId
-    }
-
-
-
     fun endParty(partyId: String) {
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
@@ -146,10 +100,6 @@ class PartyService(
         redisTemplate.opsForSet().remove(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
-        /**TODO
-         *  Com?
-         *  레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
-         */
         pumppaya(partyId);
     }
 

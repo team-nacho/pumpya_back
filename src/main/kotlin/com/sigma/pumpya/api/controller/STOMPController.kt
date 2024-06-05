@@ -27,7 +27,7 @@ class STOMPController(
         @DestinationVariable partyId: String,
         @Valid createReceiptRequest: CreateReceiptRequest
     ) {
-        val receiptId: String = partyService.saveReceipt(createReceiptRequest)
+        val receiptId: String = receiptService.saveReceipt(createReceiptRequest)
     }
     /**
     * TODO

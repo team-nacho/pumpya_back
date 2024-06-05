@@ -15,7 +15,6 @@ import java.util.*
 class ReceiptService (
     private val receiptRepository: ReceiptRepository,
     private val partyRepository: PartyRepository,
-    private val partyService: PartyService,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
     private val redisTemplate: RedisTemplate<String, String>,
@@ -40,7 +39,7 @@ class ReceiptService (
         // JPA 리포지토리를 사용해 데이터베이스에 저장
         receiptRepository.save(newReceipt)
 
-        val partyInfo = partyService.getPartyInfo(partyKey)
+        val partyInfo = redisTemplate.opsForHash<String, String>().entries(partyKey)
 
         val currencyList = try {
             objectMapper

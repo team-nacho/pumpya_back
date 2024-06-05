@@ -22,8 +22,6 @@ import java.util.*
 class PartyService(
     private val partyRepository: PartyRepository,
     private val redisTemplate: RedisTemplate<String, String>,
-    private val objectMapper: ObjectMapper,
-    private val redisPublisherService: RedisPublisherService,
     private val receiptService: ReceiptService,
     private val listParser: ListParser
 ) {

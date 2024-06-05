@@ -21,9 +21,8 @@ class ReceiptService (
     private val redisTemplate: RedisTemplate<String, String>,
 ){
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
-        // CreateReceiptRequest에서 받은 정보를 Receipt 엔티티 객체로 변환
         val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "${createReceiptRequest.partyId}"
+        val partyKey: String = "$createReceiptRequest.partyId"
 
         val newReceipt = Receipt(
             receiptId,
@@ -34,11 +33,9 @@ class ReceiptService (
             objectMapper.writeValueAsString(createReceiptRequest.joins),
             createReceiptRequest.useCurrency,
             createReceiptRequest.useTag,
-        )// BaseEntity의 @CreatedDate와 @LastModifiedDate는 자동으로 처리되므로 여기서 직접 설정할 필요는 없음
+        )
 
-
-        // JPA 리포지토리를 사용해 데이터베이스에 저장
-        receiptRepository.save(newReceipt)
+        val res = receiptRepository.save(newReceipt)
 
         val partyInfo = redisTemplate.opsForHash<String, String>().entries(partyKey)
 
@@ -54,7 +51,7 @@ class ReceiptService (
 
 
         redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
-        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(newReceipt) )
+        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(res) )
 
         return receiptId
     }

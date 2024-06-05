@@ -24,7 +24,6 @@ class CurrencyService(
         return res
     }
 
-    @Transactional
     fun deleteCurrency(currencyId: String) {
         return currencyRepository.deleteById(currencyId)
     }

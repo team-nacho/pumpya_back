@@ -23,11 +23,11 @@ class ReceiptService (
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
         // CreateReceiptRequest에서 받은 정보를 Receipt 엔티티 객체로 변환
         val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "party:${createReceiptRequest.partyId}"
+        val partyKey: String = "${createReceiptRequest.partyId}"
 
         val newReceipt = Receipt(
             receiptId,
-            partyKey,
+            createReceiptRequest.partyId,
             createReceiptRequest.author,
             createReceiptRequest.receiptName,
             createReceiptRequest.cost,

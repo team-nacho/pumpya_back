@@ -3,6 +3,8 @@ package com.sigma.pumpya.application
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
+import com.sigma.pumpya.api.request.GetPumppayaResultRequest
+import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
@@ -86,52 +88,6 @@ class PartyService(
         return redisTemplate.opsForHash<String, String>().entries(partyKey)
     }
 
-
-
-    /**TODO
-     * 영수증을 받아온 후 DB에 저장, 총 금액 업데이트
-     * id를 받아와서 redis에게 전송
-     *
-     */
-    fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
-        val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "party:${createReceiptRequest.partyId}"
-
-        val newReceipt = Receipt(
-            receiptId,
-            partyKey,
-            createReceiptRequest.author,
-            createReceiptRequest.receiptName,
-            createReceiptRequest.cost,
-            objectMapper.writeValueAsString(createReceiptRequest.joins),
-            createReceiptRequest.useCurrency,
-            createReceiptRequest.useTag,
-          )
-
-        //receipt save in DB
-        receiptService.saveReceipt(createReceiptRequest)
-        //get party info. if not exist currency, add
-        val partyInfo = getPartyInfo(partyKey)
-
-        val currencyList = try {
-            objectMapper
-                .readValue<Array<String>>(partyInfo["usedCurrencies"].toString(), Array<String>::class.java).toMutableList()
-        } catch (e: Exception) {
-            mutableListOf()
-        }
-        
-        currencyList.add(createReceiptRequest.useCurrency)
-        val currencyListToString = objectMapper.writeValueAsString(currencyList.distinct())
-
-
-        redisTemplate.opsForHash<String, String>().put(partyKey, "usedCurrencies", currencyListToString)
-        redisPublisherService.publishReceiptMessage(receiptId, Topic.RECEIPT_CREATED.name, objectMapper.writeValueAsString(newReceipt) )
-
-        return receiptId
-    }
-
-
-
     fun endParty(partyId: String) {
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
@@ -146,12 +102,14 @@ class PartyService(
         redisTemplate.opsForSet().remove(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
-        /**TODO
-         *  Com?
-         *  레디스에 삭제되기 전에 모든 영수증을 전부 계산해서 최신 반영해야함
-         */
         pumppaya(partyId);
     }
+
+    fun PumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
+        val input = pumppaya(getPumppayaResultRequest.partyId)
+        return GetPumppayaResultResponse(input)
+    }
+
 
     fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
         val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
@@ -192,6 +150,19 @@ class PartyService(
                     receiptResult[currency]!![member]
                         ?.getOrPut(receipt.author) { 0.0 }
                         ?.plus(cost)
+                }
+            }
+        }
+
+        // 금액 전송 정보 계산
+        val transferInfo: MutableMap<String, MutableMap<String, Double>> = mutableMapOf()
+        for (currency in receiptResult.keys) {
+            for (sender in receiptResult[currency]!!.keys) {
+                for (receiver in receiptResult[currency]!![sender]!!.keys) {
+                    val amount = receiptResult[currency]!![sender]!![receiver] ?: 0.0
+                    if (amount > 0) {
+                        transferInfo.getOrPut(sender) { mutableMapOf() }[receiver] = amount
+                    }
                 }
             }
         }

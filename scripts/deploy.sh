@@ -37,8 +37,14 @@ then
   echo "> 현재 구동중인 애플리케이션이 없으므로 종료하지 않습니다."
 else
   echo "> kill -15 $IDLE_PID"
-  kill -15 $IDLE_PID
-  sleep 5
+  sudo kill -15 $IDLE_PID
+
+  echo "> 애플리케이션 종료 대기 중..."
+    while kill -0 $IDLE_PID > /dev/null 2>&1; do
+      echo "> 여전히 종료 중입니다. 잠시 대기합니다..."
+      sleep 1
+    done
+    echo "> 애플리케이션이 종료되었습니다."
 fi
 
 echo "> $IDLE_PROFILE 배포"

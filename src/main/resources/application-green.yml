@@ -37,6 +37,6 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, metrics
 server:
   port: 8082

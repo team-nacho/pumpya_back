@@ -30,9 +30,9 @@ class ReceiptService (
             createReceiptRequest.author,
             createReceiptRequest.receiptName,
             createReceiptRequest.cost,
-            objectMapper.writeValueAsString(createReceiptRequest.joins),
             createReceiptRequest.useCurrency,
             createReceiptRequest.useTag,
+            objectMapper.writeValueAsString(createReceiptRequest.joins),
         )
 
         val res = receiptRepository.save(newReceipt)

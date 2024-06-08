@@ -8,6 +8,7 @@ import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
@@ -59,7 +60,7 @@ class ReceiptService (
     fun getReceiptsByPartyId(partyId : String): List<ReceiptDTO> {
         return findAllByPartyId(partyId)
     }
-    fun deleteReceipt(receiptId: String) : String{
+    fun deleteReceipt(receiptId: String): String {
         //DB에서 삭제
         //TODO 만약 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
         val receipt = receiptRepository.findById(receiptId)
@@ -82,13 +83,11 @@ class ReceiptService (
             }
             // 영수증 삭제
             receiptRepository.deleteById(receiptId)
-            return "success"
-        } else {
-            return "fail"
-        }
+            return objectMapper.writeValueAsString(receipt.get())
+        } else throw NotFoundException()
     }
 
-    /**
+    /*
      * TODO
      *  아마 이 부분은 repository의 책임인 것 같음
      */

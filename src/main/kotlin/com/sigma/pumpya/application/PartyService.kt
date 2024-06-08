@@ -108,6 +108,7 @@ class PartyService(
 
 
     fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
+        // 정상적으로 작동하는지 알기 위해서 디버깅 추가
         val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
 
@@ -149,7 +150,6 @@ class PartyService(
                 }
             }
         }
-
         // 금액 전송 정보 계산
         val transferInfo: MutableMap<String, MutableMap<String, Double>> = mutableMapOf()
         for (currency in receiptResult.keys) {

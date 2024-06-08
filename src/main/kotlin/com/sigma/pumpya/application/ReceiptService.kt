@@ -1,26 +1,35 @@
 package com.sigma.pumpya.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.sigma.pumpya.api.controller.exception.CurrencyNotFoundException
+import com.sigma.pumpya.api.controller.exception.PartyIdNotFoundException
+import com.sigma.pumpya.api.controller.exception.ReceiptNotFoundException
 import com.sigma.pumpya.api.request.CreateReceiptRequest
-import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
+import com.sigma.pumpya.infrastructure.repository.CurrencyRepository
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Service
-class ReceiptService (
+class ReceiptService(
     private val receiptRepository: ReceiptRepository,
     private val objectMapper: ObjectMapper,
     private val redisPublisherService: RedisPublisherService,
     private val redisTemplate: RedisTemplate<String, String>,
+    private val partyRepository: PartyRepository,
+    private val currencyService: CurrencyService,
+    private val currencyRepository: CurrencyRepository,
 ){
     fun saveReceipt(createReceiptRequest: CreateReceiptRequest): String {
+        if(!partyRepository.existsById(createReceiptRequest.partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
         val receiptId: String = UUID.randomUUID().toString()
         val partyKey: String = "$createReceiptRequest.partyId"
 
@@ -60,6 +69,9 @@ class ReceiptService (
         return findAllByPartyId(partyId)
     }
     fun deleteReceipt(receiptId: String) : String{
+        if(receiptRepository.existsById(receiptId)) {
+            throw ReceiptNotFoundException()
+        }
         //DB에서 삭제
         //TODO 만약 해당 통화에 대한 기록이 전부 삭제되었다면 파티 내역에서 삭제
         val receipt = receiptRepository.findById(receiptId)
@@ -95,6 +107,9 @@ class ReceiptService (
 
 
     fun findAllByUseCurrency(useCurrency: String) : List<ReceiptDTO>{
+        if(currencyRepository.existsById(useCurrency))
+            throw CurrencyNotFoundException()
+
         val receiptList = receiptRepository.findAll()
         val result = mutableListOf<ReceiptDTO>()
         for(receipt in receiptList) {
@@ -105,7 +120,12 @@ class ReceiptService (
         if(receiptList.isEmpty()) return mutableListOf<ReceiptDTO>() //Error Emerge
         return result
     }
+
     fun findAllByPartyId(partyId: String): List<ReceiptDTO> {
+        if(!partyRepository.existsById(partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
         val receiptList = receiptRepository.findAll()
         val result = mutableListOf<ReceiptDTO>()
         for(receipt in receiptList) {

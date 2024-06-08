@@ -1,6 +1,8 @@
 package com.sigma.pumpya.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.sigma.pumpya.api.controller.PartyController
+import com.sigma.pumpya.api.controller.exception.PartyIdNotFoundException
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetPumppayaResultRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
@@ -69,6 +71,10 @@ class PartyService(
     }
 
     fun getMembersWithPartyId(partyId: String): List<String> {
+        if(!partyRepository.existsById(partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
         val partyMembersKey = "party:$partyId:members"
         val memberSet: Set<String> = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
         var memberList: MutableList<String> = mutableListOf()
@@ -85,6 +91,10 @@ class PartyService(
     }
 
     fun endParty(partyId: String) {
+        if(!partyRepository.existsById(partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
 
@@ -98,79 +108,12 @@ class PartyService(
         redisTemplate.opsForSet().remove(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
-        pumppaya(partyId);
+        enhancedPump(partyId);
     }
 
     fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
         val input = enhancedPump(getPumppayaResultRequest.partyId)
         return GetPumppayaResultResponse(input)
-    }
-
-
-    fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
-        val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
-        if (receiptList.isEmpty()) return emptyMap() // Exception Handler
-        println("pumppaya: receiptList: $receiptList")
-
-        val mappingTable: MutableMap<String, Int> = mutableMapOf()
-        val receiptResult: MutableMap<String, MutableMap<String, MutableMap<String, Double>>> = mutableMapOf()
-        var memberIndex : Int = 0
-        println("pumppaya: initial: mapping table $mappingTable")
-        println("pumppaya: initial: receiptResult $receiptResult")
-
-        // 멤버 목록 초기화
-//        for (receipt in receiptList) {
-//            val members = objectMapper.readValue(rec)
-//
-//            // receipt author 추가
-//            if (!mappingTable.containsKey(receipt.author)) {
-//                mappingTable[receipt.author] = memberIndex
-//                memberIndex++
-//            }
-//            for (member in members) {
-//                if (mappingTable.containsKey(member)) continue
-//                mappingTable[member] = memberIndex
-//                memberIndex++
-//            }
-//        }
-        println("pumppaya: mapping table $mappingTable")
-
-
-        //금액계산
-        for (receipt in receiptList) {
-            val members = receipt.joins.split(",").toSet().size + 1 // 발행자 포함
-            val cost = receipt.cost / members
-            val currency = receipt.useCurrency
-            val authorIndex = mappingTable[receipt.author] ?: continue // 발행자가 없으면 건너뛰기
-
-            receiptResult.getOrPut(currency) { mutableMapOf() }
-                .getOrPut(receipt.author) { mutableMapOf() }
-
-            for ((member, index) in mappingTable) {
-                if (member != receipt.author) {
-                    receiptResult[currency]!![member]
-                        ?.getOrPut(receipt.author) { 0.0 }
-                        ?.plus(cost)
-                }
-            }
-        }
-        println("pumppaya: receiptResult $receiptResult")
-        // 금액 전송 정보 계산
-        val transferInfo: MutableMap<String, MutableMap<String, Double>> = mutableMapOf()
-        for (currency in receiptResult.keys) {
-            for (sender in receiptResult[currency]!!.keys) {
-                for (receiver in receiptResult[currency]!![sender]!!.keys) {
-                    val amount = receiptResult[currency]!![sender]!![receiver] ?: 0.0
-                    if (amount > 0) {
-                        transferInfo.getOrPut(sender) { mutableMapOf() }[receiver] = amount
-                    }
-                }
-            }
-        }
-
-        println("pumppaya: result $receiptResult")
-        enhancedPump(partyId)
-        return receiptResult
     }
 
     fun calReceipt(resultMap: MutableMap<String, MutableMap<String, Double>>, author: String, join: String, cost: Double) {
@@ -197,6 +140,7 @@ class PartyService(
         }
     }
     fun enhancedPump(partyId: String): MutableMap<String, MutableMap<String,MutableMap<String,Double>>> {
+        if(!partyRepository.existsById(partyId)) throw PartyIdNotFoundException()
         // get receipts
         val receipts = receiptService.getReceiptsByPartyId(partyId)
 

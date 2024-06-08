@@ -9,7 +9,6 @@
 package com.sigma.pumpya.application
 
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
-import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk

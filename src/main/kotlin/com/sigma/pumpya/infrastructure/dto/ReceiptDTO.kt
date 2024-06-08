@@ -9,5 +9,5 @@ data class ReceiptDTO(
     val useCurrency: String,
     val useTag : String,
     val joins: String,
-    val createdAt: String,
+    val createdAt: Long,
 )

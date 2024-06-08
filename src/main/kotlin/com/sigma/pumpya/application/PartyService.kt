@@ -101,8 +101,8 @@ class PartyService(
         pumppaya(partyId);
     }
 
-    fun PumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
-        val input = pumppaya(getPumppayaResultRequest.partyId)
+    fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
+        val input = enhancedPump(getPumppayaResultRequest.partyId)
         return GetPumppayaResultResponse(input)
     }
 
@@ -110,26 +110,31 @@ class PartyService(
     fun pumppaya(partyId : String) : Map<String, Map<String, Map<String, Double>>> {
         val receiptList: List<ReceiptDTO> = receiptService.findAllByPartyId(partyId)
         if (receiptList.isEmpty()) return emptyMap() // Exception Handler
+        println("pumppaya: receiptList: $receiptList")
 
         val mappingTable: MutableMap<String, Int> = mutableMapOf()
         val receiptResult: MutableMap<String, MutableMap<String, MutableMap<String, Double>>> = mutableMapOf()
         var memberIndex : Int = 0
+        println("pumppaya: initial: mapping table $mappingTable")
+        println("pumppaya: initial: receiptResult $receiptResult")
 
         // 멤버 목록 초기화
-        for (receipt in receiptList) {
-            val members = receipt.joins.split(",").toSet()
+//        for (receipt in receiptList) {
+//            val members = objectMapper.readValue(rec)
+//
+//            // receipt author 추가
+//            if (!mappingTable.containsKey(receipt.author)) {
+//                mappingTable[receipt.author] = memberIndex
+//                memberIndex++
+//            }
+//            for (member in members) {
+//                if (mappingTable.containsKey(member)) continue
+//                mappingTable[member] = memberIndex
+//                memberIndex++
+//            }
+//        }
+        println("pumppaya: mapping table $mappingTable")
 
-            // receipt author 추가
-            if (!mappingTable.containsKey(receipt.author)) {
-                mappingTable[receipt.author] = memberIndex
-                memberIndex++
-            }
-            for (member in members) {
-                if (mappingTable.containsKey(member)) continue
-                mappingTable[member] = memberIndex
-                memberIndex++
-            }
-        }
 
         //금액계산
         for (receipt in receiptList) {
@@ -149,7 +154,7 @@ class PartyService(
                 }
             }
         }
-
+        println("pumppaya: receiptResult $receiptResult")
         // 금액 전송 정보 계산
         val transferInfo: MutableMap<String, MutableMap<String, Double>> = mutableMapOf()
         for (currency in receiptResult.keys) {
@@ -163,6 +168,63 @@ class PartyService(
             }
         }
 
+        println("pumppaya: result $receiptResult")
+        enhancedPump(partyId)
         return receiptResult
+    }
+
+    fun calReceipt(resultMap: MutableMap<String, MutableMap<String, Double>>, author: String, join: String, cost: Double) {
+        if (author == join) return  // 혼자
+
+        // 2개의 맵을 만들어서 진행
+        val authorToJoin = resultMap.getOrPut(author) { mutableMapOf() }
+        val joinToAuthor = resultMap.getOrPut(join) { mutableMapOf() }
+
+        // 계산
+        val amount = authorToJoin.getOrDefault(author, 0.0)
+
+        if (amount > 0) {
+            if (amount > cost) {
+                authorToJoin[join] = amount - cost
+            } else if (amount < cost) {
+                joinToAuthor[author] = cost - amount
+                authorToJoin.remove(join)
+            } else {
+                authorToJoin.remove(author)
+            }
+        } else {
+            joinToAuthor[author] = joinToAuthor.getOrDefault(author, 0.0) + cost
+        }
+    }
+    fun enhancedPump(partyId: String): MutableMap<String, MutableMap<String,MutableMap<String,Double>>> {
+        // get receipts
+        val receipts = receiptService.getReceiptsByPartyId(partyId)
+
+        // 통화별 영수증 리스트
+        val currencyReceiptMap = mutableMapOf<String, MutableList<ReceiptDTO>>()
+        for(receipt in receipts) {
+            val block = currencyReceiptMap.getOrPut(receipt.useCurrency) { mutableListOf() }
+            block.add(receipt)
+        }
+
+        val result = mutableMapOf<String, MutableMap<String, MutableMap<String, Double>>>()
+        currencyReceiptMap.forEach{
+            // 초기 결과에는 아무 정보도 없으므로 추가
+            result.getOrPut(it.key) { mutableMapOf() }
+
+            val resultMap = mutableMapOf<String, MutableMap<String, Double>>()
+            for(receipt in it.value) {
+                val joins = objectMapper.readValue(receipt.joins, Array<String>::class.java)
+
+                val cost = receipt.cost / (joins.size + 1)
+                for(join in joins) {
+                    calReceipt(resultMap, receipt.author, join, cost)
+                }
+            }
+
+            result[it.key] = resultMap
+        }
+        //통화별 정산 테이블
+        return result
     }
 }

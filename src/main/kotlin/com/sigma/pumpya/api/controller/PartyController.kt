@@ -38,7 +38,7 @@ class PartyController(
     @Operation(summary = "Get Pumppay Result")
     @GetMapping("/get-pumppay-result/{partyId}")
     fun getDutchResultWithPartyId(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
-        val result = partyService.PumppayaResult(getPumppayaResultRequest)
+        val result = partyService.pumppayaResult(getPumppayaResultRequest)
         return result
     }
 

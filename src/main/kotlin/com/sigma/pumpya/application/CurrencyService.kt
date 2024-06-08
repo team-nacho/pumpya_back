@@ -1,5 +1,6 @@
 package com.sigma.pumpya.application
 
+import com.sigma.pumpya.api.controller.exception.CurrencyNotFoundException
 import com.sigma.pumpya.api.request.CreateCurrencyRequest
 import com.sigma.pumpya.domain.entity.Currency
 import com.sigma.pumpya.infrastructure.repository.CurrencyRepository
@@ -25,6 +26,9 @@ class CurrencyService(
     }
 
     fun deleteCurrency(currencyId: String) {
+        if(currencyRepository.existsById(currencyId))
+            throw CurrencyNotFoundException()
+
         return currencyRepository.deleteById(currencyId)
     }
 

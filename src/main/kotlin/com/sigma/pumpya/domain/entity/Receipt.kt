@@ -6,6 +6,10 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Entity(name = "receipt")
 class Receipt(
@@ -36,6 +40,8 @@ class Receipt(
     
 ) : BaseTimeEntity() {
     fun toDTO(): ReceiptDTO {
+//        val datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(this.createdAt!!.toLong()), ZoneId.of("UTC+9")).format(
+//            DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss".toString()))
         return ReceiptDTO(
             this.receiptId,
             this.partyId,

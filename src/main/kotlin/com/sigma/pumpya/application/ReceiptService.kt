@@ -33,7 +33,7 @@ class ReceiptService(
         }
 
         val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "$createReceiptRequest.partyId"
+        val partyKey: String = "party:${createReceiptRequest.partyId}"
 
         val newReceipt = Receipt(
             receiptId,

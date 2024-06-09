@@ -97,8 +97,9 @@ class PartyService(
 
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
+        println(partyKey)
 
-        redisTemplate.opsForHash<String, String>().delete(partyKey)
+        redisTemplate.delete(partyKey)
 
         val partyMembers = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
         for(memberId in partyMembers) {

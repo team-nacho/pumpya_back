@@ -71,7 +71,7 @@ class ReceiptService(
         return findAllByPartyId(partyId)
     }
     fun deleteReceipt(receiptId: String) : String{
-        if(receiptRepository.existsById(receiptId)) {
+        if(!receiptRepository.existsById(receiptId)) {
             throw ReceiptNotFoundException()
         }
         //DB에서 삭제
@@ -107,8 +107,7 @@ class ReceiptService(
 
 
     fun findAllByUseCurrency(useCurrency: String) : List<ReceiptDTO>{
-        if(currencyRepository.existsById(useCurrency))
-            throw CurrencyNotFoundException()
+        if(!currencyRepository.existsById(useCurrency)) throw CurrencyNotFoundException()
 
         val receiptList = receiptRepository.findAll()
         val result = mutableListOf<ReceiptDTO>()

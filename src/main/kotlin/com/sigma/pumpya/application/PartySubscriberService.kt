@@ -15,10 +15,8 @@ class PartySubscriberService(
     private val objectMapper: ObjectMapper
 ): MessageListener {
     override fun onMessage(message: Message, pattern: ByteArray?) {
-
-        val channel: String = message.channel.toString()
         val publishMessage: String? = redisTemplate.stringSerializer.deserialize(message.body)
-        println(channel)
+        print("publishMessage$publishMessage")
         publishMessage?.let { messageString ->
             try {
                 val mapType = object : TypeReference<Map<String, Any>>() {}

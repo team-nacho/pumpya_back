@@ -94,19 +94,17 @@ class PartyService(
         if(!partyRepository.existsById(partyId)) {
             throw PartyIdNotFoundException()
         }
-
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
-        println(partyKey)
 
         redisTemplate.delete(partyKey)
 
-        val partyMembers = redisTemplate.opsForSet().members(partyMembersKey) ?: emptySet()
+        val partyMembers = redisTemplate.opsForSet().members(partyMembersKey)!!
         for(memberId in partyMembers) {
             val memberKey = "member:$memberId"
-            redisTemplate.opsForHash<String, String>().delete(memberKey)
+            redisTemplate.delete(memberKey)
         }
-        redisTemplate.opsForSet().remove(partyMembersKey)
+        redisTemplate.delete(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
         enhancedPump(partyId);

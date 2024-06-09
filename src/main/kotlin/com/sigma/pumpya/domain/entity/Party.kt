@@ -15,11 +15,14 @@ class Party (
     @Column(name = "party_name")
     val partyName: String,
 
+    @Column(name = "party_arch")
+    var partyArch: String
 ): BaseTimeEntity() {
     fun toDTO(): PartyDTO {
         return PartyDTO(
             this.partyId,
             this.partyName,
+            this.partyArch
         )
     }
 }

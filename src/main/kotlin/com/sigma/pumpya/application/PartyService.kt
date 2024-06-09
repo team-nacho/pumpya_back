@@ -31,6 +31,7 @@ class PartyService(
         val partyAttributes = Party(
             partyId,
             partyName,
+            ""
         )
 
         val partyKey: String = "party:$partyId"
@@ -96,7 +97,6 @@ class PartyService(
         }
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
-
         redisTemplate.delete(partyKey)
 
         val partyMembers = redisTemplate.opsForSet().members(partyMembersKey)!!
@@ -107,7 +107,11 @@ class PartyService(
         redisTemplate.delete(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
-        enhancedPump(partyId);
+        val party = partyRepository.findById(partyId).orElseThrow { PartyIdNotFoundException() }
+        val archObject = enhancedPump(partyId);
+        val serializedArch = objectMapper.writeValueAsString(archObject);
+        party.partyArch = serializedArch
+        partyRepository.save(party)
     }
 
     fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {

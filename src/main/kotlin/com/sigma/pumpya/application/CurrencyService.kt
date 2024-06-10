@@ -26,7 +26,7 @@ class CurrencyService(
     }
 
     fun deleteCurrency(currencyId: String) {
-        if(currencyRepository.existsById(currencyId))
+        if(!currencyRepository.existsById(currencyId))
             throw CurrencyNotFoundException()
 
         return currencyRepository.deleteById(currencyId)

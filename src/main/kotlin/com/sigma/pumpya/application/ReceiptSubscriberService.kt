@@ -25,11 +25,10 @@ class ReceiptSubscriberService(
                 val messageMap: Map<String, Any> = objectMapper.readValue(messageString, mapType)
 
                 val topic: String = messageMap["topic"].toString()
-                val id: String = messageMap["id"].toString()
                 val receipt: ReceiptDTO = objectMapper.readValue(messageMap["receipt"].toString(), ReceiptDTO::class.java)
                 when(topic) {
-                    Topic.RECEIPT_CREATED.name -> handleCreateReceipt(id, receipt)
-                    Topic.RECEIPT_DELETED.name -> handleDeleteReceipt(id)
+                    Topic.RECEIPT_CREATED.name -> handleCreateReceipt(receipt)
+                    Topic.RECEIPT_DELETED.name -> handleDeleteReceipt(receipt)
                 }
 
             } catch (e: Exception) {
@@ -39,11 +38,12 @@ class ReceiptSubscriberService(
         }
 
     }
-    private fun handleCreateReceipt(receiptId: String, receipt: ReceiptDTO) {
+    private fun handleCreateReceipt(receipt: ReceiptDTO) {
+
         messagingTemplate.convertAndSend("/sub/receipt/${receipt.partyId}", objectMapper.writeValueAsString(receipt))
     }
-    private fun handleDeleteReceipt(partyId: String) {
-        messagingTemplate.convertAndSend("/sub/receipt/$partyId/delete", partyId)
+    private fun handleDeleteReceipt(receipt: ReceiptDTO) {
+        messagingTemplate.convertAndSend("/sub/receipt/${receipt.partyId}/delete", receipt.receiptId)
 
     }
 }

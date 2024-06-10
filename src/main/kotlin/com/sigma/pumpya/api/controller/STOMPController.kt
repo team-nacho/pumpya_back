@@ -2,6 +2,7 @@ package com.sigma.pumpya.api.controller
 
 import com.sigma.pumpya.api.request.CreateNewMemberRequest
 import com.sigma.pumpya.api.request.CreateReceiptRequest
+import com.sigma.pumpya.api.request.DeleteReceiptRequest
 import com.sigma.pumpya.application.PartyService
 import com.sigma.pumpya.application.ReceiptService
 import com.sigma.pumpya.application.RedisPublisherService
@@ -40,11 +41,11 @@ class STOMPController(
     @Transactional
     fun deleteReceipt(
         @DestinationVariable partyId: String,
-        @Valid receiptId: String
+        @Valid request: DeleteReceiptRequest
     ) {
         //db에서 삭제 후 레디스에 없데이트
-        receiptService.deleteReceipt(receiptId);
-        redisPublisherService.publishReceiptMessage(partyId, Topic.RECEIPT_DELETED.name, "")
+        val receipt = receiptService.deleteReceipt(request.receiptId);
+        redisPublisherService.publishReceiptMessage(request.receiptId, Topic.RECEIPT_DELETED.name, receipt)
     }
     @Operation(summary = "create member")
     @MessageMapping("/party/{partyId}/new-member")

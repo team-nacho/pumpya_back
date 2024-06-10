@@ -5,6 +5,7 @@ import com.sigma.pumpya.api.controller.exception.CurrencyNotFoundException
 import com.sigma.pumpya.api.controller.exception.PartyIdNotFoundException
 import com.sigma.pumpya.api.controller.exception.ReceiptNotFoundException
 import com.sigma.pumpya.api.request.CreateReceiptRequest
+import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.domain.entity.Receipt
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.enums.Topic
@@ -14,6 +15,7 @@ import com.sigma.pumpya.infrastructure.repository.ReceiptRepository
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Service
 class ReceiptService(
@@ -31,7 +33,7 @@ class ReceiptService(
         }
 
         val receiptId: String = UUID.randomUUID().toString()
-        val partyKey: String = "$createReceiptRequest.partyId"
+        val partyKey: String = "party:${createReceiptRequest.partyId}"
 
         val newReceipt = Receipt(
             receiptId,
@@ -69,7 +71,7 @@ class ReceiptService(
         return findAllByPartyId(partyId)
     }
     fun deleteReceipt(receiptId: String) : String{
-        if(receiptRepository.existsById(receiptId)) {
+        if(!receiptRepository.existsById(receiptId)) {
             throw ReceiptNotFoundException()
         }
         //DB에서 삭제
@@ -94,21 +96,18 @@ class ReceiptService(
             }
             // 영수증 삭제
             receiptRepository.deleteById(receiptId)
-            return "success"
-        } else {
-            return "fail"
-        }
+            return objectMapper.writeValueAsString(receipt.get())
+        } else throw ReceiptNotFoundException()
     }
 
-    /**
+    /*
      * TODO
      *  아마 이 부분은 repository의 책임인 것 같음
      */
 
 
     fun findAllByUseCurrency(useCurrency: String) : List<ReceiptDTO>{
-        if(currencyRepository.existsById(useCurrency))
-            throw CurrencyNotFoundException()
+        if(!currencyRepository.existsById(useCurrency)) throw CurrencyNotFoundException()
 
         val receiptList = receiptRepository.findAll()
         val result = mutableListOf<ReceiptDTO>()

@@ -15,10 +15,8 @@ class PartySubscriberService(
     private val objectMapper: ObjectMapper
 ): MessageListener {
     override fun onMessage(message: Message, pattern: ByteArray?) {
-
-        val channel: String = message.channel.toString()
         val publishMessage: String? = redisTemplate.stringSerializer.deserialize(message.body)
-        println(channel)
+        print("publishMessage$publishMessage")
         publishMessage?.let { messageString ->
             try {
                 val mapType = object : TypeReference<Map<String, Any>>() {}
@@ -27,10 +25,8 @@ class PartySubscriberService(
                 val topic: String = messageMap["topic"].toString()
                 val id: String = messageMap["id"].toString()
 
-                println("handleCreateReceipt:$id")
-                val partyId: String = "aaec004b-5137-4996-b5dc-627213c7f648"
                 //영수증 정보에 파티 정보가 있으니 그대로 전달하면 됨
-                messagingTemplate.convertAndSend("/sub/$partyId/end", id)
+                messagingTemplate.convertAndSend("/sub/$id/end", id)
             } catch (e: Exception) {
                 // 메시지 처리 중 오류 발생 시 예외 처리
                 println("Error processing message: $e")

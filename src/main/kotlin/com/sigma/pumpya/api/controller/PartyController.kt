@@ -4,10 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetMembersRequest
 import com.sigma.pumpya.api.request.GetPumppayaResultRequest
-import com.sigma.pumpya.api.response.CreatePartyResponse
-import com.sigma.pumpya.api.response.GetMembersResponse
-import com.sigma.pumpya.api.response.GetPartyResponse
-import com.sigma.pumpya.api.response.GetPumppayaResultResponse
+import com.sigma.pumpya.api.response.*
 import com.sigma.pumpya.application.PartyService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -67,5 +64,14 @@ class PartyController(
             jacksonObjectMapper().readValue(partyInfo["usedCurrencies"]!!.toString(), Array<String>::class.java).toMutableList(),
             members
         )
+    }
+
+    @Operation(summary = "get party history with party Id")
+    @GetMapping("/get-party-history/{partyId}")
+    fun getEndedPartyHistory(
+        @PathVariable partyId: String
+    ): GetPartyHistoryResponse {
+        val partyHistory = partyService.getPartyHisotry(partyId)
+        return GetPartyHistoryResponse(partyHistory.partyName, partyHistory.partyArch)
     }
 }

@@ -6,8 +6,10 @@ import com.sigma.pumpya.api.controller.exception.PartyIdNotFoundException
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetPumppayaResultRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
+import com.sigma.pumpya.api.response.GetPartyHistoryResponse
 import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
+import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.util.ListParser
@@ -31,6 +33,7 @@ class PartyService(
         val partyAttributes = Party(
             partyId,
             partyName,
+            ""
         )
 
         val partyKey: String = "party:$partyId"
@@ -96,7 +99,6 @@ class PartyService(
         }
         val partyKey: String = "party:$partyId"
         val partyMembersKey = "$partyKey:members"
-
         redisTemplate.delete(partyKey)
 
         val partyMembers = redisTemplate.opsForSet().members(partyMembersKey)!!
@@ -107,7 +109,21 @@ class PartyService(
         redisTemplate.delete(partyMembersKey)
         redisTemplate.opsForSet().remove("parties", partyKey)
 
-        enhancedPump(partyId);
+        val party = partyRepository.findById(partyId).orElseThrow { PartyIdNotFoundException() }
+        val archObject = enhancedPump(partyId);
+        val serializedArch = objectMapper.writeValueAsString(archObject);
+        party.partyArch = serializedArch
+        partyRepository.save(party)
+    }
+
+    fun getPartyHisotry(partyId: String): GetPartyHistoryResponse {
+        if(!partyRepository.existsById(partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
+        val party =  partyRepository.findByPartyId(partyId)
+        val arch = objectMapper.readValue(party.partyArch, Map::class.java)
+        return GetPartyHistoryResponse(party.partyName, arch)
     }
 
     fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {

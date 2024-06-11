@@ -6,6 +6,7 @@ import com.sigma.pumpya.api.controller.exception.PartyIdNotFoundException
 import com.sigma.pumpya.api.request.CreatePartyRequest
 import com.sigma.pumpya.api.request.GetPumppayaResultRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
+import com.sigma.pumpya.api.response.GetPartyHistoryResponse
 import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
 import com.sigma.pumpya.infrastructure.dto.PartyDTO
@@ -115,12 +116,14 @@ class PartyService(
         partyRepository.save(party)
     }
 
-    fun getPartyHisotry(partyId: String): PartyDTO {
+    fun getPartyHisotry(partyId: String): GetPartyHistoryResponse {
         if(!partyRepository.existsById(partyId)) {
             throw PartyIdNotFoundException()
         }
 
-        return partyRepository.findByPartyId(partyId)
+        val party =  partyRepository.findByPartyId(partyId)
+        val arch = objectMapper.readValue(party.partyArch, Map::class.java)
+        return GetPartyHistoryResponse(party.partyName, arch)
     }
 
     fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {

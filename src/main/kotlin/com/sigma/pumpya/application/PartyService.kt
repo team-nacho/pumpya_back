@@ -8,6 +8,7 @@ import com.sigma.pumpya.api.request.GetPumppayaResultRequest
 import com.sigma.pumpya.api.response.CreatePartyResponse
 import com.sigma.pumpya.api.response.GetPumppayaResultResponse
 import com.sigma.pumpya.domain.entity.Party
+import com.sigma.pumpya.infrastructure.dto.PartyDTO
 import com.sigma.pumpya.infrastructure.dto.ReceiptDTO
 import com.sigma.pumpya.infrastructure.repository.PartyRepository
 import com.sigma.pumpya.infrastructure.util.ListParser
@@ -112,6 +113,14 @@ class PartyService(
         val serializedArch = objectMapper.writeValueAsString(archObject);
         party.partyArch = serializedArch
         partyRepository.save(party)
+    }
+
+    fun getPartyHisotry(partyId: String): PartyDTO {
+        if(!partyRepository.existsById(partyId)) {
+            throw PartyIdNotFoundException()
+        }
+
+        return partyRepository.findByPartyId(partyId)
     }
 
     fun pumppayaResult(getPumppayaResultRequest: GetPumppayaResultRequest) : GetPumppayaResultResponse {
